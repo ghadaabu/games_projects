@@ -1,14 +1,16 @@
 import random, pygame, sys
 from pygame.locals import *
 
+pygame.init()
+
 FPS = 30
 WINDOWWIDTH = 640 # size of window's width in pixels
 WINDOWHEIGHT = 480 # size of windows' height in pixels
 REVEALSPEED = 8 # speed boxes' sliding reveals and covers
 BOXSIZE = 50 # size of box height & width in pixels
 GAPSIZE = 10 # size of gap between boxes in pixels
-BOARDWIDTH = 8 # number of columns of icons
-BOARDHEIGHT = 5 # number of rows of icons
+BOARDWIDTH = 4 # number of columns of icons
+BOARDHEIGHT = 2 # number of rows of icons
 assert (BOARDWIDTH * BOARDHEIGHT) % 2 == 0, "Board needs to have an even number of boxes for pairs of matches"
 XMARGIN = int((WINDOWWIDTH - (BOARDWIDTH * (BOXSIZE + GAPSIZE))) / 2)
 YMARGIN = int((WINDOWHEIGHT - (BOARDHEIGHT * (BOXSIZE + GAPSIZE))) / 2)
@@ -42,11 +44,24 @@ ALLCOLORS = (RED, GREEN, BLUE, YELLOW, ORANGE, PURPLE, CYAN)
 ALLSHAPES = (DONUT, SQUARE, DIAMOND, LINES, OVAL)
 assert len(ALLCOLORS) * len(ALLSHAPES) * 2 >= BOARDWIDTH * BOARDHEIGHT, "Board us too big for the number of shapes/colors defined"
 
+fontObj = pygame.font.Font("freesansbold.ttf", 16)
+
+# parameters to player's name input box
+COLOR_INACTIVE = pygame.Color('lightskyblue3')
+COLOR_ACTIVE = pygame.Color('dodgerblue2')
+
+
+
 def main():
     global FPSCLOCK, DISPLAYSURF
-    pygame.init()
+    # pygame.init()
     FPSCLOCK = pygame.time.Clock()
     DISPLAYSURF = pygame.display.set_mode((WINDOWWIDTH, WINDOWHEIGHT))
+
+    # creating an input box object
+    name_input_box = InputBox(50,50,140,32)
+    name_entered = False
+    done_with_name = False
 
     mousex = 0 # used to store x coordinate of mouse event
     mousey = 0 # used to store y coordinate of mouse event
@@ -58,7 +73,7 @@ def main():
     firstSelection = None # stores the (x, y) of the first box clicked.
 
     DISPLAYSURF.fill(BGCOLOR)
-    StartGameAnimation(mainBoard)
+    # StartGameAnimation(mainBoard)
 
     while True: # main game loop
         mouseClicked = False
@@ -70,45 +85,64 @@ def main():
             if event.type == QUIT or (event.type == KEYUP and event.key == K_ESCAPE):
                 pygame.quit()
                 sys.exit()
+            elif not name_entered:
+                res = name_input_box.handle_event(event)
+                print("res", res)
+                name_entered = res
+
             elif event.type == MOUSEMOTION:
                 mousex, mousey = event.pos
             elif event.type == MOUSEBUTTONUP:
                 mousex, mousey = event.pos
                 mouseClicked = True
-        boxx, boxy = getBoxAtPixel(mousex, mousey)
-        if boxx != None and boxy != None:
-            # The mouse is currently over a box.
-            if not revealedBoxes[boxx][boxy]:
-                drawHighlightBox(boxx, boxy)
-            if not revealedBoxes[boxx][boxy] and mouseClicked:
-                revealBoxesAnimation(mainBoard, [(boxx, boxy)])
-                revealedBoxes[boxx][boxy] = True
-                if firstSelection == None:
-                    firstSelection = (boxx, boxy)
-                else:
-                    icon1shape, icon1color = getShapeAndColor(mainBoard, firstSelection[0], firstSelection[1])
-                    icon2shape, icon2color = getShapeAndColor(mainBoard, boxx, boxy)
-                    if icon1shape != icon2shape or icon1color != icon2color:
-                        pygame.time.wait(1000)  # 1000 milliseconds = 1 sec
-                        coverBoxesAnimation(mainBoard, [(firstSelection[0], firstSelection[1]), (boxx, boxy)])
-                        revealedBoxes[firstSelection[0]][firstSelection[1]] = False
-                        revealedBoxes[boxx][boxy] = False
-                    elif hasWon(revealedBoxes): # check if all pairs found
-                        gameWonAnimation(mainBoard)
-                        pygame.time.wait(2000)
 
-                        # Reset the board
-                        mainBoard = getRandomizedBoard()
-                        revealedBoxes = generateRevealedBoxesData(False)
+        if not done_with_name:
+            name_input_box.update()
 
-                        # Show the fully unrevealed board for a second.
-                        drawBoard(mainBoard, revealedBoxes)
-                        pygame.display.update()
-                        pygame.time.wait(1000)
+            name_input_box.draw(DISPLAYSURF)
+            if name_entered:
+                done_with_name = True
 
-                        # Replay the start game animation.
-                        StartGameAnimation(mainBoard)
-                    firstSelection = None
+            # pygame.display.flip()
+            # FPSCLOCK.tick(30)
+        else:
+            boxx, boxy = getBoxAtPixel(mousex, mousey)
+            if boxx != None and boxy != None:
+                # The mouse is currently over a box.
+                if not revealedBoxes[boxx][boxy]:
+                    drawHighlightBox(boxx, boxy)
+                if not revealedBoxes[boxx][boxy] and mouseClicked:
+                    revealBoxesAnimation(mainBoard, [(boxx, boxy)])
+                    revealedBoxes[boxx][boxy] = True
+                    if firstSelection == None:
+                        firstSelection = (boxx, boxy)
+                    else:
+                        icon1shape, icon1color = getShapeAndColor(mainBoard, firstSelection[0], firstSelection[1])
+                        icon2shape, icon2color = getShapeAndColor(mainBoard, boxx, boxy)
+                        if icon1shape != icon2shape or icon1color != icon2color:
+                            pygame.time.wait(1000)  # 1000 milliseconds = 1 sec
+                            coverBoxesAnimation(mainBoard, [(firstSelection[0], firstSelection[1]), (boxx, boxy)])
+                            revealedBoxes[firstSelection[0]][firstSelection[1]] = False
+                            revealedBoxes[boxx][boxy] = False
+                        elif hasWon(revealedBoxes): # check if all pairs found
+                            gameWonAnimation(mainBoard)
+                            pygame.time.wait(2000)
+
+                            # Reset the board
+                            mainBoard = getRandomizedBoard()
+                            revealedBoxes = generateRevealedBoxesData(False)
+
+                            # Show the fully unrevealed board for a second.
+                            drawBoard(mainBoard, revealedBoxes)
+                            pygame.display.update()
+                            pygame.time.wait(1000)
+
+                            # Replay the start game animation.
+                            StartGameAnimation(mainBoard)
+                            name_entered = False
+                            done_with_name = False
+                            name_input_box.text = ''
+                        firstSelection = None
         # Redraw the screen and wait a clock tick.
         pygame.display.update()
         FPSCLOCK.tick(FPS)
@@ -253,7 +287,7 @@ def StartGameAnimation(board):
 
     # drawBoard(board, coveredBoxes)
     for i in range(1):
-        revealBoxesAnimation(board, boxes, 800)
+        revealBoxesAnimation(board, boxes, 100) #set Reveal speed to 800 for normal game
         coverBoxesAnimation(board, boxes)
     # for boxGroup in boxGroups:
     #     revealBoxesAnimation(board, boxGroup)
@@ -281,9 +315,66 @@ def hasWon(revealedBoxes):
             return False # return False if any boxes are covered.
     return True
 
+# class for the input box (used to get the player's name)
+class InputBox:
+
+    def __init__(self, x, y, w, h, text=''):
+        self.rect = pygame.Rect(x, y, w, h)
+        self.color = COLOR_INACTIVE
+        self.text = text
+        self.txt_surface = fontObj.render(text, True, self.color)
+        self.active = False
+
+    def handle_event(self, event):
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            # If the user clicked on the input_box rect.
+            if self.rect.collidepoint(event.pos):
+                # Toggle the active variable.
+                self.active = not self.active
+            else:
+                self.active = False
+            # Change the current color of the input box.
+            self.color = COLOR_ACTIVE if self.active else COLOR_INACTIVE
+        if event.type == pygame.KEYDOWN:
+            if self.active:
+                if event.key == pygame.K_RETURN:
+                    # print(self.text)
+                    print("pressed enter")
+                    return True
+                    # self.text = ''
+                elif event.key == pygame.K_BACKSPACE:
+                    self.text = self.text[:-1]
+                else:
+                    self.text += event.unicode
+                # Re-render the text.
+                self.txt_surface = fontObj.render(self.text, True, self.color)
+        return False
+    def update(self):
+        # Resize the box if the text is too long.
+        width = max(200, self.txt_surface.get_width()+10)
+        self.rect.w = width
+
+    def draw(self, screen):
+        # Blit the text.
+        screen.blit(self.txt_surface, (self.rect.x+5, self.rect.y+5))
+        # Blit the rect.
+        pygame.draw.rect(screen, self.color, self.rect, 2)
+
+
 
 if __name__ == '__main__':
     main()
+
+
+
+
+
+
+
+
+
+
+
 
 
 # ideas to add to the game
