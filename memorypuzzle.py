@@ -54,7 +54,6 @@ COLOR_INACTIVE = WHITE
 COLOR_ACTIVE = pygame.Color('lightskyblue3')
 
 
-
 def main():
     global FPSCLOCK, DISPLAYSURF
     # pygame.init()
@@ -179,14 +178,8 @@ def getRandomizedBoard():
 
 
 def splitIntoGroupsOf(groupSize, theList): #check
-    # splits a list into a list of lists, where the inner lists have at
-    # most groupSize number of items.
-
+    # splits a list into a list of lists, where the inner lists have at most groupSize number of items.
     return [theList[i:i+groupSize] for i in range(0, len(theList), groupSize)]
-    # result = []
-    # for i in range(0, len(theList), groupSize):
-    #     result.append(theList[i:i+groupSize])
-    # return result
 
 
 def leftTopCoordsOfBox(boxx, boxy):
@@ -228,8 +221,7 @@ def drawIcon(shape, color, boxx, boxy):
 
 
 def getShapeAndColor(board, boxx, boxy):
-    # shape value for x, y spot is stored in board[x][y][0]
-    # color value for x, y spot is stored in board[x][y][1]
+    # shape and color values for x, y spot is stored in board[x][y][0] and board[x][y][1] respectively
     return board[boxx][boxy][0], board[boxx][boxy][1]
 
 
@@ -278,22 +270,14 @@ def drawHighlightBox(boxx, boxy):
 
 
 def StartGameAnimation(board):
-    # Randomly reveal the boxes 8 at a time.
-    coveredBoxes = generateRevealedBoxesData(False)
     boxes = []
     for x in range(BOARDWIDTH):
         for y in range(BOARDHEIGHT):
             boxes.append((x,y))
     random.shuffle(boxes)
-    # boxGroups = splitIntoGroupsOf(8, boxes)
 
-    # drawBoard(board, coveredBoxes)
-    for i in range(1):
-        revealBoxesAnimation(board, boxes, 100) #set Reveal speed to 800 for normal game
-        coverBoxesAnimation(board, boxes)
-    # for boxGroup in boxGroups:
-    #     revealBoxesAnimation(board, boxGroup)
-    #     coverBoxesAnimation(board, boxGroup)
+    revealBoxesAnimation(board, boxes, 100) #set Reveal speed to 800 for normal game
+    coverBoxesAnimation(board, boxes)
 
 
 def gameWonAnimation(board):
@@ -367,21 +351,3 @@ class InputBox:
 
 if __name__ == '__main__':
     main()
-
-
-
-
-
-
-
-
-
-
-
-
-
-# ideas to add to the game
-# - add a button in the beginning of the game says start, that covers all the boxes
-# - add text showing the number of pairs left or score
-# - add image to the top of each box (game logo)
-# - add outline to the boxes when revealed
