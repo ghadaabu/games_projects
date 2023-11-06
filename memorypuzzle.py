@@ -42,13 +42,16 @@ OVAL = 'oval'
 
 ALLCOLORS = (RED, GREEN, BLUE, YELLOW, ORANGE, PURPLE, CYAN)
 ALLSHAPES = (DONUT, SQUARE, DIAMOND, LINES, OVAL)
-assert len(ALLCOLORS) * len(ALLSHAPES) * 2 >= BOARDWIDTH * BOARDHEIGHT, "Board us too big for the number of shapes/colors defined"
+assert len(ALLCOLORS) * len(ALLSHAPES) * 2 >= BOARDWIDTH * BOARDHEIGHT, "Board is too big for the number of shapes/colors defined"
 
 fontObj = pygame.font.Font("freesansbold.ttf", 16)
+textSurfaceObj = fontObj.render("Enter player name: ", True, WHITE)
+textRectObj = textSurfaceObj.get_rect()
+textRectObj.topleft = (50, 50)
 
 # parameters to player's name input box
-COLOR_INACTIVE = pygame.Color('lightskyblue3')
-COLOR_ACTIVE = pygame.Color('dodgerblue2')
+COLOR_INACTIVE = WHITE
+COLOR_ACTIVE = pygame.Color('lightskyblue3')
 
 
 
@@ -59,7 +62,7 @@ def main():
     DISPLAYSURF = pygame.display.set_mode((WINDOWWIDTH, WINDOWHEIGHT))
 
     # creating an input box object
-    name_input_box = InputBox(50,50,140,32)
+    name_input_box = InputBox(textRectObj.topright[0] + 10, 2 * textRectObj.topright[1] - textRectObj.center[1],140,32)
     name_entered = False
     done_with_name = False
 
@@ -87,7 +90,6 @@ def main():
                 sys.exit()
             elif not name_entered:
                 res = name_input_box.handle_event(event)
-                print("res", res)
                 name_entered = res
 
             elif event.type == MOUSEMOTION:
@@ -98,15 +100,15 @@ def main():
 
         if not done_with_name:
             name_input_box.update()
-
-            name_input_box.draw(DISPLAYSURF)
+            name_input_box.draw(DISPLAYSURF, textSurfaceObj, textRectObj)
             if name_entered:
                 done_with_name = True
-
-            # pygame.display.flip()
-            # FPSCLOCK.tick(30)
+                textSurfaceObj2 = fontObj.render(f"Player name: {name_input_box.text}", True, WHITE)
+                textRectObj2 = textSurfaceObj2.get_rect()
+                textRectObj2.topleft = (50, 50)
         else:
             boxx, boxy = getBoxAtPixel(mousex, mousey)
+            DISPLAYSURF.blit(textSurfaceObj2, textRectObj2)
             if boxx != None and boxy != None:
                 # The mouse is currently over a box.
                 if not revealedBoxes[boxx][boxy]:
@@ -354,9 +356,10 @@ class InputBox:
         width = max(200, self.txt_surface.get_width()+10)
         self.rect.w = width
 
-    def draw(self, screen):
+    def draw(self, screen, msg_surf, msg_rect):
         # Blit the text.
-        screen.blit(self.txt_surface, (self.rect.x+5, self.rect.y+5))
+        screen.blit(self.txt_surface, (self.rect.x+5, self.rect.y+8))
+        screen.blit(msg_surf, msg_rect)
         # Blit the rect.
         pygame.draw.rect(screen, self.color, self.rect, 2)
 
