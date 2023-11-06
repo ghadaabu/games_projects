@@ -9,8 +9,8 @@ WINDOWHEIGHT = 480 # size of windows' height in pixels
 REVEALSPEED = 8 # speed boxes' sliding reveals and covers
 BOXSIZE = 50 # size of box height & width in pixels
 GAPSIZE = 10 # size of gap between boxes in pixels
-BOARDWIDTH = 4 # number of columns of icons
-BOARDHEIGHT = 2 # number of rows of icons
+BOARDWIDTH = 8 # number of columns of icons
+BOARDHEIGHT = 5 # number of rows of icons
 assert (BOARDWIDTH * BOARDHEIGHT) % 2 == 0, "Board needs to have an even number of boxes for pairs of matches"
 XMARGIN = int((WINDOWWIDTH - (BOARDWIDTH * (BOXSIZE + GAPSIZE))) / 2)
 YMARGIN = int((WINDOWHEIGHT - (BOARDHEIGHT * (BOXSIZE + GAPSIZE))) / 2)
@@ -48,11 +48,6 @@ fontObj = pygame.font.Font("freesansbold.ttf", 16)
 textSurfaceObj = fontObj.render("Enter player name: ", True, WHITE)
 textRectObj = textSurfaceObj.get_rect()
 textRectObj.topleft = (50, 50)
-
-# parameters to player's name input box
-COLOR_INACTIVE = WHITE
-COLOR_ACTIVE = pygame.Color('lightskyblue3')
-
 
 
 def main():
@@ -319,10 +314,11 @@ def hasWon(revealedBoxes):
 
 # class for the input box (used to get the player's name)
 class InputBox:
-
+    COLOR_INACTIVE = WHITE
+    COLOR_ACTIVE = pygame.Color('lightskyblue3')
     def __init__(self, x, y, w, h, text=''):
         self.rect = pygame.Rect(x, y, w, h)
-        self.color = COLOR_INACTIVE
+        self.color = self.COLOR_INACTIVE
         self.text = text
         self.txt_surface = fontObj.render(text, True, self.color)
         self.active = False
@@ -336,7 +332,7 @@ class InputBox:
             else:
                 self.active = False
             # Change the current color of the input box.
-            self.color = COLOR_ACTIVE if self.active else COLOR_INACTIVE
+            self.color = self.COLOR_ACTIVE if self.active else self.COLOR_INACTIVE
         if event.type == pygame.KEYDOWN:
             if self.active:
                 if event.key == pygame.K_RETURN:
