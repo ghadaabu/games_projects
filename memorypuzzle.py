@@ -73,9 +73,9 @@ def main():
     revealedBoxes = generateRevealedBoxesData(False)
 
     firstSelection = None # stores the (x, y) of the first box clicked.
-
+    score = 100
     DISPLAYSURF.fill(BGCOLOR)
-    # StartGameAnimation(mainBoard)
+
 
     while True: # main game loop
         mouseClicked = False
@@ -105,7 +105,13 @@ def main():
                 textSurfaceObj2 = fontObj.render(f"Player name: {name_input_box.text}", True, WHITE)
                 textRectObj2 = textSurfaceObj2.get_rect()
                 textRectObj2.topleft = (50, 50)
+                StartGameAnimation(mainBoard)
         else:
+            scoreSurf = fontObj.render('Score: ' + str(score), 1, WHITE)
+            scoreRect = scoreSurf.get_rect()
+            scoreRect.topleft = (WINDOWWIDTH - 100, 10)
+            DISPLAYSURF.blit(scoreSurf, scoreRect)
+
             boxx, boxy = getBoxAtPixel(mousex, mousey)
             DISPLAYSURF.blit(textSurfaceObj2, textRectObj2)
             if boxx != None and boxy != None:
@@ -125,6 +131,7 @@ def main():
                             coverBoxesAnimation(mainBoard, [(firstSelection[0], firstSelection[1]), (boxx, boxy)])
                             revealedBoxes[firstSelection[0]][firstSelection[1]] = False
                             revealedBoxes[boxx][boxy] = False
+                            score -= 20
                         elif hasWon(revealedBoxes): # check if all pairs found
                             gameWonAnimation(mainBoard)
                             pygame.time.wait(2000)
@@ -140,10 +147,12 @@ def main():
 
                             # Replay the start game animation.
                             StartGameAnimation(mainBoard)
+                            score = 100
                             name_entered = False
                             done_with_name = False
                             name_input_box.text = ''
                         firstSelection = None
+                        score += 10
         # Redraw the screen and wait a clock tick.
         pygame.display.update()
         FPSCLOCK.tick(FPS)
