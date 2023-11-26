@@ -17,6 +17,7 @@ class SpeedTypeTest:
     AMARANTH = (229, 43, 80)
     AMARANTH_RED = (211, 33, 45)  # darker
     BITCOIN_ORANGE = (242, 169, 0)
+    LIGHT_CYAN = (224, 255, 255)
 
     FONT_TYPE = None
     FONT_SIZE = 30
@@ -132,7 +133,7 @@ class SpeedTypeTest:
         # taking the item in index 4 as the horizontal advance
         # to know how much space each letter takes during rendering
         M_ADV_X = 4
-        text_surf_rect = font.get_rect(self.sentence + '|')  # taking into account the cursor
+        text_surf_rect = font.get_rect(self.sentence)  # taking into account the cursor
         baseline = text_surf_rect.y
         text_surf_rect.center = (self.WINDOWWIDTH / 2, self.WINDOWHEIGHT / 2 - 50)
         # creating a surface to render the text on and center it to the screen
@@ -141,26 +142,41 @@ class SpeedTypeTest:
         text_surf.fill(self.BG_COLOR)
         # print("....")
         current_h_adv = 0
-        for ind, char in enumerate(self.input_sentence+'|'):
-            if char == (self.sentence + '|')[ind]:
+        for ind, char in enumerate(self.input_sentence):
+            if char == (self.sentence)[ind]:
                 color = self.WHITE
-            # elif char == ' ':
-            #     color = 'lightblue'
-            #     char = '_'
-            elif char == '|':
-                color = 'lightblue'
             else:
                 color = self.AMARANTH
             font.render_to(text_surf, (current_h_adv, baseline), char, color)
             current_h_adv += self.font_metrics[char][M_ADV_X]
 
+        # saving the upper left corner position of the cursor
+        cursor_position = (text_surf_rect.left + current_h_adv - 1, text_surf_rect.center[1]-3)
+
+
+
         for char in self.sentence[len(self.input_sentence):]:
-            # if char == ' ':
-            #     char = '_'
             color = self.BATTLESHIP_GRAY
             font.render_to(text_surf, (current_h_adv, baseline), char, color)
             current_h_adv += self.font_metrics[char][M_ADV_X]
         self.SCREEN.blit(text_surf, text_surf_rect)
+
+        # adding cursor
+        fontObj = pygame.font.Font(self.FONT_TYPE, self.FONT_SIZE + 10)
+        # fontObj.set_bold(True)
+        textSurfaceObj = fontObj.render('|', True, self.LIGHT_CYAN)
+        textRectObj = textSurfaceObj.get_rect()
+        textRectObj.center = cursor_position
+        self.SCREEN.blit(textSurfaceObj, textRectObj)
+
+        # textRectObj = font.get_rect('|')  # taking into account the cursor
+        # textRectObj.center = cursor_position
+        #
+        # textSurfaceObj = pygame.Surface(textRectObj.size)
+        # textSurfaceObj.fill(self.BG_COLOR)
+        # font.render_to(textSurfaceObj, cursor_position, '|', self.LIGHT_CYAN)
+        # self.SCREEN.blit(textSurfaceObj, textRectObj)
+
         # pygame.display.flip()
 
 
