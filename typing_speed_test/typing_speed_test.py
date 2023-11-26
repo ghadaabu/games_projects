@@ -40,7 +40,7 @@ class SpeedTypeTest:
         pygame.display.set_caption('Type Speed Test')
 
         font = pygame.freetype.Font(self.FONT_TYPE, self.FONT_SIZE)
-        alphabet = 'abcdefghijklmnopqrstuvwxyz| ,.!ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+        alphabet = 'abcdefghijklmnopqrstuvwxyz| ,._!ABCDEFGHIJKLMNOPQRSTUVWXYZ'
         metrics = font.get_metrics(alphabet)
         # getting the sizes of all the letters in the english alphabet
         self.font_metrics = dict(zip(alphabet, metrics))
@@ -50,11 +50,12 @@ class SpeedTypeTest:
         self.reset_game()
 
         while True:
-            clock = pygame.time.Clock()
-            self.SCREEN.fill(self.BG_COLOR)
-            self.draw_game(self.SCREEN)
-            self.draw_sentence(self.sentence, self.input_sentence, self.SCREEN)
-            pygame.display.update()
+            if self.reset:
+                clock = pygame.time.Clock()
+                self.SCREEN.fill(self.BG_COLOR)
+                self.draw_game(self.SCREEN)
+                self.draw_sentence(self.sentence, self.input_sentence, self.SCREEN)
+                pygame.display.update()
 
             for event in pygame.event.get():
                 if event.type == QUIT:
@@ -64,7 +65,7 @@ class SpeedTypeTest:
                 elif event.type == pygame.MOUSEBUTTONUP:
                     x, y = pygame.mouse.get_pos()
                     # pressed anywhere on the screen
-                    if 0 <= x <= self.WINDOWWIDTH and 0 <= y <= self.WINDOWHEIGHT:
+                    if 0 <= x <= self.WINDOWWIDTH and 0 <= y <= self.WINDOWHEIGHT and not self.running:
                         self.running = True
 
                     # position of reset box
@@ -77,22 +78,26 @@ class SpeedTypeTest:
                     if self.running and not self.active:
                         self.start_time = time.time()
                         self.active = True
-                    if event.key == pygame.K_RETURN and len(self.input_sentence) == len(self.sentence):
-                        self.running = False
-                    elif event.key == pygame.K_BACKSPACE:
+                    # if event.key == pygame.K_RETURN and len(self.input_sentence) == len(self.sentence):
+                    #     self.running = False
+                    if event.key == pygame.K_BACKSPACE:
                         self.input_sentence = self.input_sentence[:-1]
                     elif self.active and not self.end:
+                        # print(len(self.input_sentence), len(self.sentence), self.sentence, "   ", self.input_sentence)
                         try:
                             self.input_sentence += event.unicode
                             self.draw_sentence(self.sentence, self.input_sentence, self.SCREEN)
-                            if len(self.input_sentence) == len(self.sentence):
-                                self.active = False
-                                self.end = True
-                                self.show_result()
-                                # self.reset_game()
+
 
                         except:
                             pass
+                        if len(self.input_sentence) >= len(self.sentence):
+                                self.active = False
+                                self.end = True
+                                self.show_result()
+                                self.reset = False
+                                # self.reset_game()
+
             pygame.display.update()
         clock.tick(60)
 
@@ -134,11 +139,14 @@ class SpeedTypeTest:
         text_surf = pygame.Surface(text_surf_rect.size)
 
         text_surf.fill(self.BG_COLOR)
-
+        # print("....")
         current_h_adv = 0
         for ind, char in enumerate(self.input_sentence+'|'):
             if char == (self.sentence + '|')[ind]:
                 color = self.WHITE
+            # elif char == ' ':
+            #     color = 'lightblue'
+            #     char = '_'
             elif char == '|':
                 color = 'lightblue'
             else:
@@ -147,6 +155,8 @@ class SpeedTypeTest:
             current_h_adv += self.font_metrics[char][M_ADV_X]
 
         for char in self.sentence[len(self.input_sentence):]:
+            # if char == ' ':
+            #     char = '_'
             color = self.BATTLESHIP_GRAY
             font.render_to(text_surf, (current_h_adv, baseline), char, color)
             current_h_adv += self.font_metrics[char][M_ADV_X]
@@ -161,7 +171,7 @@ class SpeedTypeTest:
         self.end = False
         self.active = False
         self.reset = True
-        self.running = False
+        # self.running = False
         self.SCREEN.fill(self.BG_COLOR)
 
         # initializing sentence by getting a random new one
@@ -197,20 +207,21 @@ class SpeedTypeTest:
             self.speed = len(self.input_sentence) * 60 / (5 * self.total_time)
             self.end = False
 
-            results = [f'Total time: {self.total_time}[secs]',\
-                       f'Accuracy: {self.accuracy}%',
-                       f'typing speed: {self.speed} [wpm]']
+            results = [f'Total time: {self.total_time:.2f}  secs',\
+                       f'Accuracy: {self.accuracy:.2f}%',
+                       f'Typing speed: {self.speed:.2f}  wpm']
             for ind, txt in enumerate(results):
-                self.print_text(txt, ind+20)
-            pygame.display.flip();
+                self.print_text(txt, ind*40)
+            pygame.display.update()
 
 
 
     def print_text(self, text, pos):
-        fontObj = pygame.font.Font(None, self.FONT_SIZE)
+        fontObj = pygame.font.Font(None, 26)
         textSurfaceObj = fontObj.render(text, True, self.BITCOIN_ORANGE)
-        textRectObj = textSurfaceObj.get_rect()
-        textRectObj.center = (self.WINDOWWIDTH/2, self.WINDOWHEIGHT/2 + pos)
-        self.SCREEN.blit(textSurfaceObj, textRectObj)
+        # textRectObj = textSurfaceObj.get_rect()
+        # textRectObj.center = (self.WINDOWWIDTH/2, self.WINDOWHEIGHT/2 + pos)
+        self.SCREEN.blit(textSurfaceObj, (100, self.WINDOWHEIGHT/2 + 40 + pos))
+        # self.SCREEN.blit(textSurfaceObj, textRectObj)
 SpeedTypeTest().run_game()
 
