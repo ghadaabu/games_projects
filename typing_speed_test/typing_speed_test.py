@@ -4,8 +4,8 @@ import pygame.freetype
 
 
 class SpeedTypeTest:
-    WINDOWWIDTH = 640  # size of window's width in pixels
-    WINDOWHEIGHT = 480  # size of windows' height in pixels
+    WINDOWWIDTH = 1000#640  # size of window's width in pixels
+    WINDOWHEIGHT = 700#480  # size of windows' height in pixels
 
     # set up the colors
     BLACK = (0, 0, 0)
@@ -19,8 +19,9 @@ class SpeedTypeTest:
     BITCOIN_ORANGE = (242, 169, 0)
     LIGHT_CYAN = (224, 255, 255)
 
-    FONT_TYPE = None
-    FONT_SIZE = 30
+    FONT_TYPE = "RobotoMono-Regular.ttf" # using Google's font - RobotoMono-Regular font
+    # the purpose of using a monospace font is to deal with wrong typed letters so the text surface won't change size
+    FONT_SIZE = 24
     BG_COLOR = BITCOIN_GRAY
     letter_colors = {'r': WHITE, 'w': AMARANTH, 'e': AMARANTH_RED, 'n': BATTLESHIP_GRAY}
     reset_box_size = (WINDOWWIDTH/2-30, WINDOWHEIGHT-60, 60, 30)
@@ -35,6 +36,7 @@ class SpeedTypeTest:
         self.active = False
         self.reset = True
         self.running = False
+        self.words_number = 6
 
         pygame.init()
         self.SCREEN = pygame.display.set_mode((self.WINDOWWIDTH, self.WINDOWHEIGHT))
@@ -70,8 +72,8 @@ class SpeedTypeTest:
                         self.running = True
 
                     # position of reset box
-                    if self.reset_box_size[0] <= x <= self.reset_box_size[0]+self.reset_box_size[2] and\
-                        self.reset_box_size[1] <= y <= self.reset_box_size[1] + self.reset_box_size[3]:
+                    if self.reset_box_size[0] <= x <= self.reset_box_size[0]+self.reset_box_size[2] \
+                        and self.reset_box_size[1] <= y <= self.reset_box_size[1] + self.reset_box_size[3]:
                         self.reset_game()
                         x, y = pygame.mouse.get_pos()
 
@@ -92,12 +94,16 @@ class SpeedTypeTest:
 
                         except:
                             pass
+
                         if len(self.input_sentence) >= len(self.sentence):
-                                self.active = False
-                                self.end = True
-                                self.show_result()
-                                self.reset = False
-                                # self.reset_game()
+                            self.SCREEN.fill(self.BG_COLOR)
+                            self.draw_game(self.SCREEN)
+                            self.draw_sentence(self.sentence, self.input_sentence, self.SCREEN)
+                            self.active = False
+                            self.end = True
+                            self.show_result()
+                            self.reset = False
+                            # self.reset_game()
 
             pygame.display.update()
         clock.tick(60)
@@ -108,6 +114,16 @@ class SpeedTypeTest:
         sentence = random.choice(list(sentences.readlines()))
         sentences.close()
         return sentence[:-1]
+
+    def randomize_sentence(self):
+        # returns a random sentence from sentences file
+        words = open("wordlist.10000.txt")
+        sentence = random.sample(list(words.readlines()), self.words_number)
+        sentence = [word[:-1] for word in sentence]
+        delimiter = " "
+        sentence = delimiter.join(sentence)
+        words.close()
+        return sentence
 
     def extend_sentence(self, original_sen, input_sen):
         original_words = original_sen.split(" ")
@@ -133,7 +149,7 @@ class SpeedTypeTest:
         # taking the item in index 4 as the horizontal advance
         # to know how much space each letter takes during rendering
         M_ADV_X = 4
-        text_surf_rect = font.get_rect(self.sentence)  # taking into account the cursor
+        text_surf_rect = font.get_rect(self.sentence+' ')
         baseline = text_surf_rect.y
         text_surf_rect.center = (self.WINDOWWIDTH / 2, self.WINDOWHEIGHT / 2 - 50)
         # creating a surface to render the text on and center it to the screen
@@ -191,7 +207,8 @@ class SpeedTypeTest:
         self.SCREEN.fill(self.BG_COLOR)
 
         # initializing sentence by getting a random new one
-        self.sentence = self.get_sentence()
+        # self.sentence = self.get_sentence()
+        self.sentence = self.randomize_sentence()
 
 
 
@@ -224,7 +241,7 @@ class SpeedTypeTest:
             self.end = False
 
             results = [f'Total time: {self.total_time:.2f}  secs',\
-                       f'Accuracy: {self.accuracy:.2f}%',
+                       f'Accuracy: {self.accuracy:.2f}  %',
                        f'Typing speed: {self.speed:.2f}  wpm']
             for ind, txt in enumerate(results):
                 self.print_text(txt, ind*40)
@@ -233,11 +250,12 @@ class SpeedTypeTest:
 
 
     def print_text(self, text, pos):
-        fontObj = pygame.font.Font(None, 26)
+        fontObj = pygame.font.Font(self.FONT_TYPE, 20)
         textSurfaceObj = fontObj.render(text, True, self.BITCOIN_ORANGE)
         # textRectObj = textSurfaceObj.get_rect()
         # textRectObj.center = (self.WINDOWWIDTH/2, self.WINDOWHEIGHT/2 + pos)
         self.SCREEN.blit(textSurfaceObj, (100, self.WINDOWHEIGHT/2 + 40 + pos))
         # self.SCREEN.blit(textSurfaceObj, textRectObj)
+
 SpeedTypeTest().run_game()
 
