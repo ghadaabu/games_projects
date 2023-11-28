@@ -4,8 +4,8 @@ import pygame.freetype
 
 
 class SpeedTypeTest:
-    WINDOWWIDTH = 1000#640  # size of window's width in pixels
-    WINDOWHEIGHT = 700#480  # size of windows' height in pixels
+    WINDOWWIDTH = 1200  # 640  # size of window's width in pixels
+    WINDOWHEIGHT = 800  # 480  # size of windows' height in pixels
 
     ALPHABET = 'abcdefghijklmnopqrstuvwxyz| ,._!ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 
@@ -26,8 +26,12 @@ class SpeedTypeTest:
     # the purpose of using a monospace font is to deal with wrong typed letters so the text surface won't change size
     FONT_SIZE = 24
     BG_COLOR = BITCOIN_GRAY
+    MARGIN = 150
     letter_colors = {'r': WHITE, 'w': AMARANTH, 'e': AMARANTH_RED, 'n': BATTLESHIP_GRAY}
-    reset_box_size = (WINDOWWIDTH/2-30, WINDOWHEIGHT-60, 60, 30)
+    reset_box_size = (WINDOWWIDTH / 2 - 30, WINDOWHEIGHT - 60, 60, 30)
+    word_count_box_size = (220, 100, 30, 30)  # (x_top_left_corner, y_top,-left, width, height)
+    boxes_shift = 40  # the space between the options
+
     def __init__(self):
         self.start_time = 0
         self.total_time = 0
@@ -39,17 +43,19 @@ class SpeedTypeTest:
         self.active = False
         self.reset = True
         self.running = False
-        self.words_number = 6
+        self.word_count = 10
 
         pygame.init()
         self.SCREEN = pygame.display.set_mode((self.WINDOWWIDTH, self.WINDOWHEIGHT))
         pygame.display.set_caption('Type Speed Test')
 
+        # Saving the sizes of all the letters in the english alphabet
+        # this is needed in case the font is not monospace font
         font = pygame.freetype.Font(self.FONT_TYPE, self.FONT_SIZE)
         metrics = font.get_metrics(self.ALPHABET)
         # getting the sizes of all the letters in the english alphabet
         self.font_metrics = dict(zip(self.ALPHABET, metrics))
-
+        print(self.font_metrics)
 
     def run_game(self):
         self.reset_game()
@@ -74,10 +80,26 @@ class SpeedTypeTest:
                         self.running = True
 
                     # position of reset box
-                    if self.reset_box_size[0] <= x <= self.reset_box_size[0]+self.reset_box_size[2] \
-                        and self.reset_box_size[1] <= y <= self.reset_box_size[1] + self.reset_box_size[3]:
+                    elif self.reset_box_size[0] <= x <= self.reset_box_size[0] + self.reset_box_size[2] \
+                            and self.reset_box_size[1] <= y <= self.reset_box_size[1] + self.reset_box_size[3]:
                         self.reset_game()
-                        x, y = pygame.mouse.get_pos()
+                        # x, y = pygame.mouse.get_pos()
+
+                    # checking if user selected new word count
+                    elif self.word_count_box_size[1] <= y <= self.word_count_box_size[1] + self.word_count_box_size[3]:
+                        if self.word_count_box_size[0] <= x <= self.word_count_box_size[0] + self.word_count_box_size[2] \
+                                and self.word_count != 10:
+                            self.word_count = 10
+                            self.reset_game()
+                        elif self.word_count_box_size[0] <= x - self.boxes_shift <= self.word_count_box_size[0] + \
+                                self.word_count_box_size[2] and self.word_count != 20:
+                            self.word_count = 20
+                            self.reset_game()
+                        elif self.word_count_box_size[0] <= x - 2 * self.boxes_shift <= self.word_count_box_size[0] + \
+                                self.word_count_box_size[2] and self.word_count != 30:
+                            self.word_count = 30
+                            self.reset_game()
+                        # x, y = pygame.mouse.get_pos()
 
                 elif event.type == pygame.KEYDOWN:
                     if self.running and not self.active:
@@ -119,8 +141,8 @@ class SpeedTypeTest:
 
     def randomize_sentence(self):
         # returns a random sentence from sentences file
-        words = open("wordlist.10000.txt") # https://www.mit.edu/~ecprice/wordlist.10000 link to file
-        sentence = random.sample(list(words.readlines()), self.words_number)
+        words = open("wordlist.10000.txt")  # https://www.mit.edu/~ecprice/wordlist.10000 link to file
+        sentence = random.sample(list(words.readlines()), self.word_count)
         sentence = [word[:-1] for word in sentence]
         delimiter = " "
         sentence = delimiter.join(sentence)
@@ -151,7 +173,7 @@ class SpeedTypeTest:
         # taking the item in index 4 as the horizontal advance
         # to know how much space each letter takes during rendering
         M_ADV_X = 4
-        text_surf_rect = font.get_rect(self.sentence+' ')
+        text_surf_rect = font.get_rect(self.sentence + ' ')
         baseline = text_surf_rect.y
         text_surf_rect.center = (self.WINDOWWIDTH / 2, self.WINDOWHEIGHT / 2 - 50)
         # creating a surface to render the text on and center it to the screen
@@ -169,9 +191,7 @@ class SpeedTypeTest:
             current_h_adv += self.font_metrics[char][M_ADV_X]
 
         # saving the upper left corner position of the cursor
-        cursor_position = (text_surf_rect.left + current_h_adv - 1, text_surf_rect.center[1]-3)
-
-
+        cursor_position = (text_surf_rect.left + current_h_adv - 1, text_surf_rect.center[1] - 3)
 
         for char in self.sentence[len(self.input_sentence):]:
             color = self.BATTLESHIP_GRAY
@@ -187,18 +207,6 @@ class SpeedTypeTest:
         textRectObj.center = cursor_position
         self.SCREEN.blit(textSurfaceObj, textRectObj)
 
-        # textRectObj = font.get_rect('|')  # taking into account the cursor
-        # textRectObj.center = cursor_position
-        #
-        # textSurfaceObj = pygame.Surface(textRectObj.size)
-        # textSurfaceObj.fill(self.BG_COLOR)
-        # font.render_to(textSurfaceObj, cursor_position, '|', self.LIGHT_CYAN)
-        # self.SCREEN.blit(textSurfaceObj, textRectObj)
-
-        # pygame.display.flip()
-
-
-
     def reset_game(self):
         self.start_time = 0
         self.input_sentence = ''
@@ -212,15 +220,51 @@ class SpeedTypeTest:
         # self.sentence = self.get_sentence()
         self.sentence = self.randomize_sentence()
 
-
-
-
     def draw_game(self, screen):
-        pygame.draw.rect(screen, self.BATTLESHIP_GRAY, self.reset_box_size)
-        fontObj = pygame.font.Font(None, 18)
-        textSurfaceObj = fontObj.render('Reset', True, self.WHITE)
+        # drawing the reset button
+        self.draw_box_with_txt((self.WINDOWWIDTH / 2, self.WINDOWHEIGHT - 45), self.reset_box_size, 'Reset', 12,
+                               self.BATTLESHIP_GRAY, self.WHITE, screen)
+        txt_pos = (self.MARGIN, self.word_count_box_size[1] + self.word_count_box_size[2] / 2)
+        self.draw_txt(txt_pos, 'Word count:', 16, self.WHITE, screen)
+        # drawing the word count buttons
+        for count in range(10, 40, 10):
+            pos_shift = self.boxes_shift * (count / 10 - 1)
+            center_position = (self.word_count_box_size[0] + pos_shift + self.word_count_box_size[2] / 2,
+                               self.word_count_box_size[1] + self.word_count_box_size[2] / 2)
+
+            self.draw_txt(center_position, str(count), 16, self.WHITE, screen)
+
+    def draw_box_with_txt(self, center_position, box_size, txt, txt_size, box_color, txt_color, screen):
+        """
+        # this funtion renders a box with text.
+        :param center_position: the center position of the box
+        :param box_size: box size
+        :param txt: the text to be rendered
+        :param txt_size: the size of the font
+        :param box_color: the color of the box
+        :param txt_color: the color of the text
+        :param screen: the screen to blit the objects to
+        """
+        pygame.draw.rect(screen, box_color, box_size)
+        fontObj = pygame.font.Font(self.FONT_TYPE, txt_size)
+        textSurfaceObj = fontObj.render(txt, True, txt_color)
         textRectObj = textSurfaceObj.get_rect()
-        textRectObj.center = (self.WINDOWWIDTH / 2, self.WINDOWHEIGHT - 45)
+        textRectObj.center = center_position
+        screen.blit(textSurfaceObj, textRectObj)
+
+    def draw_txt(self, center_position, txt, txt_size, txt_color, screen):
+        """
+        # this funtion renders text.
+        :param center_position: the center position of the box
+        :param txt: the text to be rendered
+        :param txt_size: the size of the font
+        :param txt_color: the color of the text
+        :param screen: the screen to blit the objects to
+        """
+        fontObj = pygame.font.Font(self.FONT_TYPE, txt_size)
+        textSurfaceObj = fontObj.render(txt, True, txt_color)
+        textRectObj = textSurfaceObj.get_rect()
+        textRectObj.center = center_position
         screen.blit(textSurfaceObj, textRectObj)
 
     def show_result(self):
@@ -242,22 +286,20 @@ class SpeedTypeTest:
             self.speed = len(self.input_sentence) * 60 / (5 * self.total_time)
             self.end = False
 
-            results = [f'Total time: {self.total_time:.2f}  secs',\
+            results = [f'Total time: {self.total_time:.2f}  secs',
                        f'Accuracy: {self.accuracy:.2f}  %',
                        f'Typing speed: {self.speed:.2f}  wpm']
             for ind, txt in enumerate(results):
-                self.print_text(txt, ind*40)
+                self.print_text(txt, ind * 40)
             pygame.display.update()
-
-
 
     def print_text(self, text, pos):
         fontObj = pygame.font.Font(self.FONT_TYPE, 20)
         textSurfaceObj = fontObj.render(text, True, self.BITCOIN_ORANGE)
         # textRectObj = textSurfaceObj.get_rect()
         # textRectObj.center = (self.WINDOWWIDTH/2, self.WINDOWHEIGHT/2 + pos)
-        self.SCREEN.blit(textSurfaceObj, (100, self.WINDOWHEIGHT/2 + 40 + pos))
+        self.SCREEN.blit(textSurfaceObj, (100, self.WINDOWHEIGHT / 2 + 40 + pos))
         # self.SCREEN.blit(textSurfaceObj, textRectObj)
 
-SpeedTypeTest().run_game()
 
+SpeedTypeTest().run_game()
