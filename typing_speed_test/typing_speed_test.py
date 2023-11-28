@@ -7,6 +7,8 @@ class SpeedTypeTest:
     WINDOWWIDTH = 1000#640  # size of window's width in pixels
     WINDOWHEIGHT = 700#480  # size of windows' height in pixels
 
+    ALPHABET = 'abcdefghijklmnopqrstuvwxyz| ,._!ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+
     # set up the colors
     BLACK = (0, 0, 0)
     WHITE = (255, 255, 255)
@@ -19,7 +21,8 @@ class SpeedTypeTest:
     BITCOIN_ORANGE = (242, 169, 0)
     LIGHT_CYAN = (224, 255, 255)
 
-    FONT_TYPE = "RobotoMono-Regular.ttf" # using Google's font - RobotoMono-Regular font
+    # using Google's font - RobotoMono-Regular font. https://fonts.google.com/specimen/IBM+Plex+Mono?query=mono
+    FONT_TYPE = "RobotoMono-Regular.ttf"
     # the purpose of using a monospace font is to deal with wrong typed letters so the text surface won't change size
     FONT_SIZE = 24
     BG_COLOR = BITCOIN_GRAY
@@ -43,10 +46,9 @@ class SpeedTypeTest:
         pygame.display.set_caption('Type Speed Test')
 
         font = pygame.freetype.Font(self.FONT_TYPE, self.FONT_SIZE)
-        alphabet = 'abcdefghijklmnopqrstuvwxyz| ,._!ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-        metrics = font.get_metrics(alphabet)
+        metrics = font.get_metrics(self.ALPHABET)
         # getting the sizes of all the letters in the english alphabet
-        self.font_metrics = dict(zip(alphabet, metrics))
+        self.font_metrics = dict(zip(self.ALPHABET, metrics))
 
 
     def run_game(self):
@@ -88,10 +90,10 @@ class SpeedTypeTest:
                     elif self.active and not self.end:
                         # print(len(self.input_sentence), len(self.sentence), self.sentence, "   ", self.input_sentence)
                         try:
-                            self.input_sentence += event.unicode
-                            self.draw_sentence(self.sentence, self.input_sentence, self.SCREEN)
-
-
+                            # checks if the entered key is an alphabet letter or punctuation marks
+                            if event.unicode in self.ALPHABET:
+                                self.input_sentence += event.unicode
+                                self.draw_sentence(self.sentence, self.input_sentence, self.SCREEN)
                         except:
                             pass
 
@@ -117,7 +119,7 @@ class SpeedTypeTest:
 
     def randomize_sentence(self):
         # returns a random sentence from sentences file
-        words = open("wordlist.10000.txt")
+        words = open("wordlist.10000.txt") # https://www.mit.edu/~ecprice/wordlist.10000 link to file
         sentence = random.sample(list(words.readlines()), self.words_number)
         sentence = [word[:-1] for word in sentence]
         delimiter = " "
