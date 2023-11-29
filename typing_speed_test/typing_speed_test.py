@@ -1,6 +1,7 @@
 import pygame, sys, time, random
 from pygame.locals import *
 import pygame.freetype
+from math import ceil
 
 
 class SpeedTypeTest:
@@ -8,7 +9,6 @@ class SpeedTypeTest:
     WINDOWHEIGHT = 800  # 480  # size of windows' height in pixels
 
     ALPHABET = 'abcdefghijklmnopqrstuvwxyz| ,._!ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-
     # set up the colors
     BLACK = (0, 0, 0)
     WHITE = (255, 255, 255)
@@ -55,11 +55,12 @@ class SpeedTypeTest:
         metrics = font.get_metrics(self.ALPHABET)
         # getting the sizes of all the letters in the english alphabet
         self.font_metrics = dict(zip(self.ALPHABET, metrics))
-        print(self.font_metrics)
+        self.letter_width = self.font_metrics['a'][4]
+        self.row_len = self.WINDOWWIDTH - 2 * self.MARGIN
+        print(self.letter_width, self.row_len)
 
     def run_game(self):
         self.reset_game()
-
         while True:
             if self.reset:
                 clock = pygame.time.Clock()
@@ -114,11 +115,12 @@ class SpeedTypeTest:
                         try:
                             # checks if the entered key is an alphabet letter or punctuation marks
                             if event.unicode in self.ALPHABET:
+
                                 self.input_sentence += event.unicode
                                 self.draw_sentence(self.sentence, self.input_sentence, self.SCREEN)
                         except:
                             pass
-
+                        # checking if the test ended where all the letters are entered
                         if len(self.input_sentence) >= len(self.sentence):
                             self.SCREEN.fill(self.BG_COLOR)
                             self.draw_game(self.SCREEN)
@@ -149,11 +151,12 @@ class SpeedTypeTest:
         words.close()
         return sentence
 
+
     def extend_sentence(self, original_sen, input_sen):
         original_words = original_sen.split(" ")
         input_words = input_sen.split(" ")
         extended_sen = ''
-        for i, word in original_words:
+        for i, word in enumerate(original_words):
             # noinspection PyBroadException
             try:  # the purpose is to handle the cases where the original sentence contains more words than the input
                 if len(word) < len(input_words[i]):
@@ -180,7 +183,6 @@ class SpeedTypeTest:
         text_surf = pygame.Surface(text_surf_rect.size)
 
         text_surf.fill(self.BG_COLOR)
-        # print("....")
         current_h_adv = 0
         for ind, char in enumerate(self.input_sentence):
             if char == (self.sentence)[ind]:
@@ -206,6 +208,27 @@ class SpeedTypeTest:
         textRectObj = textSurfaceObj.get_rect()
         textRectObj.center = cursor_position
         self.SCREEN.blit(textSurfaceObj, textRectObj)
+
+    def split_sentence_into_rows(self, sentence, letter_size, max_row_len):
+        # splits the sentence into rows of maximum row_size and returns a list of strings - the rows
+
+        rows_num = len(sentence) * letter_size / max_row_len
+        print(rows_num)
+        if ceil(rows_num) <= 1:
+            return [sentence]
+
+        rows = ['']
+        words = sentence.split(' ')
+        row_ind = 0
+        for word in words:
+            if (len(rows[row_ind]) + len(word)) * letter_size <= max_row_len:
+                rows[row_ind] = rows[row_ind] + word
+            else:  # the row is full - starting a new row
+                row_ind += 1
+                rows = rows + [word]
+            if (len(rows[row_ind]) + 1) * letter_size <= max_row_len:
+                rows[row_ind] = rows[row_ind] + ' '
+        return rows
 
     def reset_game(self):
         self.start_time = 0
@@ -286,14 +309,14 @@ class SpeedTypeTest:
             self.speed = len(self.input_sentence) * 60 / (5 * self.total_time)
             self.end = False
 
-            results = [f'Total time: {self.total_time:.2f}  secs',
-                       f'Accuracy: {self.accuracy:.2f}  %',
-                       f'Typing speed: {self.speed:.2f}  wpm']
+            results = [f'Total time: {self.total_time:.2f} secs',
+                       f'Accuracy: {self.accuracy:.2f} %',
+                       f'Typing speed: {ceil(self.speed)} wpm']
             for ind, txt in enumerate(results):
-                self.print_text(txt, ind * 40)
+                self.print_results_text(txt, ind * 40)
             pygame.display.update()
 
-    def print_text(self, text, pos):
+    def print_results_text(self, text, pos):
         fontObj = pygame.font.Font(self.FONT_TYPE, 20)
         textSurfaceObj = fontObj.render(text, True, self.BITCOIN_ORANGE)
         # textRectObj = textSurfaceObj.get_rect()
