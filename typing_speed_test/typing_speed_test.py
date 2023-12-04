@@ -16,15 +16,15 @@ class SpeedTypeTest:
     BITCOIN_GRAY = (77, 77, 78)  # darker
     BLACK_COFFEE = (59, 47, 47)
     FATHOM_GREY = (41, 44, 51)
-    AMARANTH = (229, 43, 80)
-    AMARANTH_RED = (211, 33, 45)  # darker
+    AMARANTH = (211, 33, 45) #(229, 43, 80)
+    AMARANTH_RED = (150, 27, 45)  # darker
     BITCOIN_ORANGE = (242, 169, 0)
     LIGHT_CYAN = (224, 255, 255)
 
     # using Google's font - RobotoMono-Regular font. https://fonts.google.com/specimen/IBM+Plex+Mono?query=mono
     FONT_TYPE = "RobotoMono-Regular.ttf"
     # the purpose of using a monospace font is to deal with wrong typed letters so the text surface won't change size
-    FONT_SIZE = 24
+    FONT_SIZE = 20
     BG_COLOR = BITCOIN_GRAY
     MARGIN = 150
     letter_colors = {'r': WHITE, 'w': AMARANTH, 'e': AMARANTH_RED, 'n': BATTLESHIP_GRAY}
@@ -57,7 +57,7 @@ class SpeedTypeTest:
         self.font_metrics = dict(zip(self.ALPHABET, metrics))
         self.letter_width = self.font_metrics['a'][4]
         self.row_len = self.WINDOWWIDTH - 2 * self.MARGIN
-        print(self.letter_width, self.row_len)
+        # print(self.letter_width, self.row_len)
 
     def run_game(self):
         self.reset_game()
@@ -121,7 +121,8 @@ class SpeedTypeTest:
                         except:
                             pass
                         # checking if the test ended where all the letters are entered
-                        if len(self.input_sentence) >= len(self.sentence):
+                        input_words = self.input_sentence.split(' ')
+                        if len(input_words) >= self.word_count and len(input_words[-1]) >= len(self.sentence.split(' ')[-1]):
                             self.SCREEN.fill(self.BG_COLOR)
                             self.draw_game(self.SCREEN)
                             self.draw_sentence(self.sentence, self.input_sentence, self.SCREEN)
@@ -168,46 +169,65 @@ class SpeedTypeTest:
         return extended_sen[:-1]  # discarding the last space
 
     def draw_sentence(self, original_sen, input_sen, screen):
-        font = pygame.freetype.Font(self.FONT_TYPE, self.FONT_SIZE)
-        # origin is the position of the original text and font_height is the scaled height of the font in pixels
-        font.origin = True
-        font_height = font.get_sized_height()
+        # font = pygame.freetype.Font(self.FONT_TYPE, self.FONT_SIZE)
+        # # origin is the position of the original text and font_height is the scaled height of the font in pixels
+        # font.origin = True
 
-        # taking the item in index 4 as the horizontal advance
-        # to know how much space each letter takes during rendering
-        M_ADV_X = 4
-        text_surf_rect = font.get_rect(self.sentence + ' ')
-        baseline = text_surf_rect.y
-        text_surf_rect.center = (self.WINDOWWIDTH / 2, self.WINDOWHEIGHT / 2 - 50)
-        # creating a surface to render the text on and center it to the screen
-        text_surf = pygame.Surface(text_surf_rect.size)
+        lines_spacing = 50
+        line_ind = 0
+        sentence_words = self.sentence.split(' ')
+        # print(sentence_words)
+        input_sen_words = self.input_sentence.split(' ')
+        current_h_adv = 900
 
-        text_surf.fill(self.BG_COLOR)
-        current_h_adv = 0
-        for ind, char in enumerate(self.input_sentence):
-            if char == (self.sentence)[ind]:
-                color = self.WHITE
-            else:
-                color = self.AMARANTH
-            font.render_to(text_surf, (current_h_adv, baseline), char, color)
-            current_h_adv += self.font_metrics[char][M_ADV_X]
+        for i, word in enumerate(sentence_words):
+            in_word = input_sen_words[i] if i < len(input_sen_words) else ''
+            # check if there is space left on the current line
+            if max(len(word), len(in_word)) * self.letter_width + current_h_adv > self.row_len:
+                if line_ind != 0:
+                    self.SCREEN.blit(text_surf, text_surf_rect)
+                font = pygame.freetype.Font(self.FONT_TYPE, self.FONT_SIZE)
+                # origin is the position of the original text and font_height is the scaled height of the font in pixels
+                font.origin = True
+                text_surf_rect = font.get_rect(self.ALPHABET + '                         ')  # (x,y,w,h)
+                baseline = text_surf_rect.y
+                text_surf = pygame.Surface(text_surf_rect.size)
+                text_surf_rect.topleft = (self.MARGIN - 50, self.WINDOWHEIGHT // 2 - 100 + lines_spacing * line_ind)
+                text_surf.fill(self.BG_COLOR)
+                current_h_adv = 0
+                line_ind += 1
+            if i == len(input_sen_words) - 1:  # the word to the cursor position
+                cursor_y = text_surf_rect.y
+                cursor_x = self.MARGIN - 50 + current_h_adv + len(in_word) * self.letter_width
 
-        # saving the upper left corner position of the cursor
-        cursor_position = (text_surf_rect.left + current_h_adv - 1, text_surf_rect.center[1] - 3)
-
-        for char in self.sentence[len(self.input_sentence):]:
-            color = self.BATTLESHIP_GRAY
-            font.render_to(text_surf, (current_h_adv, baseline), char, color)
-            current_h_adv += self.font_metrics[char][M_ADV_X]
-        self.SCREEN.blit(text_surf, text_surf_rect)
+            for ind in range(min(len(word), len(in_word))):
+                if word[ind] == in_word[ind]:
+                    color = self.WHITE
+                else:
+                    color = self.AMARANTH
+                font.render_to(text_surf, (current_h_adv, baseline), word[ind], color)
+                current_h_adv += self.letter_width
+            if len(word) < len(in_word):  # the user typed extra letters
+                for letter in in_word[len(word):]:
+                    font.render_to(text_surf, (current_h_adv, baseline), letter, self.AMARANTH_RED)
+                    current_h_adv += self.letter_width
+            elif len(word) > len(in_word):
+                for letter in word[len(in_word):]:
+                    font.render_to(text_surf, (current_h_adv, baseline), letter, self.BATTLESHIP_GRAY)
+                    current_h_adv += self.letter_width
+            # adding a space after the word
+            font.render_to(text_surf, (current_h_adv, baseline), ' ', self.BATTLESHIP_GRAY)
+            current_h_adv += self.letter_width
+            self.SCREEN.blit(text_surf, text_surf_rect)
 
         # adding cursor
-        fontObj = pygame.font.Font(self.FONT_TYPE, self.FONT_SIZE + 10)
-        # fontObj.set_bold(True)
-        textSurfaceObj = fontObj.render('|', True, self.LIGHT_CYAN)
-        textRectObj = textSurfaceObj.get_rect()
-        textRectObj.center = cursor_position
-        self.SCREEN.blit(textSurfaceObj, textRectObj)
+        if cursor_x != None and cursor_y != None:
+            fontObj = pygame.font.Font(self.FONT_TYPE, self.FONT_SIZE + 10)
+            # fontObj.set_bold(True)
+            textSurfaceObj = fontObj.render('|', True, self.LIGHT_CYAN)
+            textRectObj = textSurfaceObj.get_rect()
+            textRectObj.center = (cursor_x, cursor_y)
+            self.SCREEN.blit(textSurfaceObj, textRectObj)
 
     def split_sentence_into_rows(self, sentence, letter_size, max_row_len):
         # splits the sentence into rows of maximum row_size and returns a list of strings - the rows
@@ -242,6 +262,7 @@ class SpeedTypeTest:
         # initializing sentence by getting a random new one
         # self.sentence = self.get_sentence()
         self.sentence = self.randomize_sentence()
+        print(self.sentence)
 
     def draw_game(self, screen):
         # drawing the reset button
@@ -307,7 +328,7 @@ class SpeedTypeTest:
 
             # Calculate speed (word per minute wpm)
             self.speed = len(self.input_sentence) * 60 / (5 * self.total_time)
-            self.end = False
+            # self.end = False
 
             results = [f'Total time: {self.total_time:.2f} secs',
                        f'Accuracy: {self.accuracy:.2f} %',
@@ -321,7 +342,7 @@ class SpeedTypeTest:
         textSurfaceObj = fontObj.render(text, True, self.BITCOIN_ORANGE)
         # textRectObj = textSurfaceObj.get_rect()
         # textRectObj.center = (self.WINDOWWIDTH/2, self.WINDOWHEIGHT/2 + pos)
-        self.SCREEN.blit(textSurfaceObj, (100, self.WINDOWHEIGHT / 2 + 40 + pos))
+        self.SCREEN.blit(textSurfaceObj, (100, self.WINDOWHEIGHT / 2 + 100 + pos))
         # self.SCREEN.blit(textSurfaceObj, textRectObj)
 
 
