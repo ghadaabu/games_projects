@@ -11,3 +11,7 @@ The Speed Typing Test is a Python-based game created using the Pygame library. T
 - **Performance Metrics:** The program calculates typing speed and accuracy, presenting comprehensive results at the end of the test.
 
 - **Customizable Test Length:** Users can choose the length of the test, selecting between 10, 20, or 30 words for a tailored typing experience.
+
+To run this project, you need to download the following:
+- RobotoMono-Regular font from google fonts. https://fonts.google.com/specimen/IBM+Plex+Mono?query=mono
+- data base for words, link to download https://www.mit.edu/~ecprice/wordlist.10000. the file should be named "wordlist.10000.txt".
