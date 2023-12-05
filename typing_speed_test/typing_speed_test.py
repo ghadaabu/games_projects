@@ -153,21 +153,6 @@ class SpeedTypeTest:
         return sentence
 
 
-    def extend_sentence(self, original_sen, input_sen):
-        original_words = original_sen.split(" ")
-        input_words = input_sen.split(" ")
-        extended_sen = ''
-        for i, word in enumerate(original_words):
-            # noinspection PyBroadException
-            try:  # the purpose is to handle the cases where the original sentence contains more words than the input
-                if len(word) < len(input_words[i]):
-                    extended_sen = extended_sen + input_words[i] + ' '
-                else:
-                    extended_sen = extended_sen + word + ' '
-            except:
-                extended_sen = extended_sen + word + ' '
-        return extended_sen[:-1]  # discarding the last space
-
     def draw_sentence(self, original_sen, input_sen, screen):
         # font = pygame.freetype.Font(self.FONT_TYPE, self.FONT_SIZE)
         # # origin is the position of the original text and font_height is the scaled height of the font in pixels
@@ -317,18 +302,20 @@ class SpeedTypeTest:
             self.total_time = time.time() - self.start_time
 
             # Calculate accuracy
-            correct_chars = 0
-            for i, c in enumerate(self.sentence):
-                try:
-                    if self.input_sentence[i] == c:
-                        correct_chars += 1
-                except:
-                    pass
+            correct_chars = self.word_count - 1  # counting the spaces
+            sentence_words = self.sentence.split(' ')
+            input_sen_words = self.input_sentence.split(' ')
+            for i, word in enumerate(sentence_words):
+                for j, c in enumerate(word):
+                    try:
+                        if c == input_sen_words[i][j]:
+                            correct_chars += 1
+                    except:
+                        pass
             self.accuracy = correct_chars / len(self.sentence) * 100
 
             # Calculate speed (word per minute wpm)
             self.speed = len(self.input_sentence) * 60 / (5 * self.total_time)
-            # self.end = False
 
             results = [f'Total time: {self.total_time:.2f} secs',
                        f'Accuracy: {self.accuracy:.2f} %',
