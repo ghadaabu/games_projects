@@ -8,18 +8,19 @@ class SpeedTypeTest:
     WINDOWWIDTH = 1200  # 640  # size of window's width in pixels
     WINDOWHEIGHT = 800  # 480  # size of windows' height in pixels
 
-    ALPHABET = 'abcdefghijklmnopqrstuvwxyz| ,._!ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+    ALPHABET = 'abcdefghijklmnopqrstuvwxyz| :;,._!ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+    PUNCTUATION_MARKS = [':', '.', ',', '!', ';']
     # set up the colors
-    BLACK =           (  0,   0,   0)
-    WHITE =           (255, 255, 255)
+    BLACK = (0, 0, 0)
+    WHITE = (255, 255, 255)
     BATTLESHIP_GRAY = (132, 132, 130)
-    BITCOIN_GRAY =    ( 77,  77,  78)  # darker
-    BLACK_COFFEE =    ( 59,  47,  47)
-    FATHOM_GREY =     ( 41,  44,  51)
-    AMARANTH =        (211,  33,  45)
-    AMARANTH_RED =    (150,  27,  45)  # darker
-    BITCOIN_ORANGE =  (242, 169,   0)
-    LIGHT_CYAN =      (224, 255, 255)
+    BITCOIN_GRAY = (77, 77, 78)  # darker
+    BLACK_COFFEE = (59, 47, 47)
+    FATHOM_GREY = (41, 44, 51)
+    AMARANTH = (211, 33, 45)
+    AMARANTH_RED = (150, 27, 45)  # darker
+    BITCOIN_ORANGE = (242, 169, 0)
+    LIGHT_CYAN = (224, 255, 255)
 
     # using Google's font - RobotoMono-Regular font. https://fonts.google.com/specimen/IBM+Plex+Mono?query=mono
     FONT_TYPE = "RobotoMono-Regular.ttf"
@@ -31,9 +32,10 @@ class SpeedTypeTest:
     BG_COLOR = BITCOIN_GRAY
     MARGIN = 150
 
-    reset_box_size = (WINDOWWIDTH / 2 - 30, WINDOWHEIGHT - 60, 60, 30)
-    word_count_box_size = (220, 100, 30, 30)  # (x_top_left_corner, y_top,-left, width, height)
-    boxes_shift = 40  # the space between the options
+    RESET_BOX_SIZE = (WINDOWWIDTH / 2 - 30, WINDOWHEIGHT - 100, 60, 30)
+    WORD_COUNT_BOX_SIZE = (210, 100, 30, 30)  # (x_top_left_corner, y_top_left, width, height)
+    BOXES_SHIFT = 40  # the space between the options
+    BUTTONS_FONT_SIZE = 16
 
     def __init__(self):
         self.start_time = 0
@@ -42,12 +44,14 @@ class SpeedTypeTest:
         self.speed = 0
         self.sentence = ''
         self.input_sentence = ''
-        self.word_count = 10 # setting the default word count to 10 words
+        self.word_count = 10  # setting the default word count to 10 words_file
 
-        self.running = False # states whether the user is on the screen of the game
-        self.active = False # states whether the user started the test
-        self.end = False # states whether the test ended
-        self.update_screen = True # states whether to update the screen's display
+        self.running = False  # states whether the user is on the screen of the game
+        self.active = False  # states whether the user started the test
+        self.end = False  # states whether the test ended
+        self.update_screen = True  # states whether to update the screen's display
+        self.numbers = False  # if True, the test will have numbers
+        self.punctuations = False  # if True, the test will have punctuation marks
 
         pygame.init()
         self.SCREEN = pygame.display.set_mode((self.WINDOWWIDTH, self.WINDOWHEIGHT))
@@ -63,6 +67,9 @@ class SpeedTypeTest:
         # Since I use monospace font, all the letters have the same horizontal size
         self.letter_width = self.font_metrics['a'][4]
         self.row_len = self.WINDOWWIDTH - 2 * self.MARGIN
+
+        self.NUMBER_BUTTON = (340, 100, len("numbers")*self.letter_width, 30)  # (x_top_left, y_top_left, x_size, y_size)
+        self.PUNCTUATION_BUTTON = (450, 100, len("Punctuation")*self.letter_width, 30)  # (x_top_left, y_top_left, x_size, y_size)
 
     def run_game(self):
         self.reset_game()
@@ -86,24 +93,32 @@ class SpeedTypeTest:
                         self.running = True
 
                     # position of reset box
-                    elif self.reset_box_size[0] <= x <= self.reset_box_size[0] + self.reset_box_size[2] \
-                            and self.reset_box_size[1] <= y <= self.reset_box_size[1] + self.reset_box_size[3]:
+                    elif self.RESET_BOX_SIZE[0] <= x <= self.RESET_BOX_SIZE[0] + self.RESET_BOX_SIZE[2] \
+                            and self.RESET_BOX_SIZE[1] <= y <= self.RESET_BOX_SIZE[1] + self.RESET_BOX_SIZE[3]:
                         self.reset_game()
 
                     # checking if the user selected new word count
-                    elif self.word_count_box_size[1] <= y <= self.word_count_box_size[1] + self.word_count_box_size[3]:
-                        if self.word_count_box_size[0] <= x <= self.word_count_box_size[0] + self.word_count_box_size[2]\
+                    elif self.WORD_COUNT_BOX_SIZE[1] <= y <= self.WORD_COUNT_BOX_SIZE[1] + self.WORD_COUNT_BOX_SIZE[3]:
+                        if self.WORD_COUNT_BOX_SIZE[0] <= x <= self.WORD_COUNT_BOX_SIZE[0] + self.WORD_COUNT_BOX_SIZE[2] \
                                 and self.word_count != 10:
                             self.word_count = 10
                             self.reset_game()
-                        elif self.word_count_box_size[0] <= x - self.boxes_shift <= self.word_count_box_size[0] + \
-                                self.word_count_box_size[2] and self.word_count != 20:
+                        elif self.WORD_COUNT_BOX_SIZE[0] <= x - self.BOXES_SHIFT <= self.WORD_COUNT_BOX_SIZE[0] + \
+                                self.WORD_COUNT_BOX_SIZE[2] and self.word_count != 20:
                             self.word_count = 20
                             self.reset_game()
-                        elif self.word_count_box_size[0] <= x - 2 * self.boxes_shift <= self.word_count_box_size[0] + \
-                                self.word_count_box_size[2] and self.word_count != 30:
+                        elif self.WORD_COUNT_BOX_SIZE[0] <= x - 2 * self.BOXES_SHIFT <= self.WORD_COUNT_BOX_SIZE[0] + \
+                                self.WORD_COUNT_BOX_SIZE[2] and self.word_count != 30:
                             self.word_count = 30
                             self.reset_game()
+                    if self.NUMBER_BUTTON[1] <= y <= self.NUMBER_BUTTON[1] + self.NUMBER_BUTTON[3]:
+                        if self.NUMBER_BUTTON[0] <= x <= self.NUMBER_BUTTON[0] + self.NUMBER_BUTTON[2]:
+                            self.numbers = not self.numbers
+                            self.reset_game()
+                        elif self.PUNCTUATION_BUTTON[0] <= x <= self.PUNCTUATION_BUTTON[0] + self.PUNCTUATION_BUTTON[2]:
+                            self.punctuations = not self.punctuations
+                            self.reset_game()
+
 
                 elif event.type == pygame.KEYDOWN:
                     if self.running and not self.active:
@@ -138,21 +153,32 @@ class SpeedTypeTest:
     def randomize_sentence(self):
         """
         generates a random sentence of the length of word_count the is determined by the user.
-        gets the words from .txt file specified in the initialization of the game.
+        gets the words_file from .txt file specified in the initialization of the game.
         :return: string - random sentence
         """
-        words = open(self.DATA_FILE_NAME)
-        sentence = random.sample(list(words.readlines()), self.word_count)
-        sentence = [word[:-1] for word in sentence]
+        words_file = open(self.DATA_FILE_NAME)
+        words = random.sample(list(words_file.readlines()), self.word_count)
+        words = [word[:-1] for word in words]
+        if self.punctuations:
+            puncs = [self.PUNCTUATION_MARKS[random.randint(0, len(self.PUNCTUATION_MARKS) - 1)] for i in
+                     range(0, int(self.word_count * 0.2))]
+            for pun in puncs:
+                ind = random.choice(range(0, self.word_count))
+                words[ind] = words[ind] + pun
+        if self.numbers:
+            nums = random.sample(range(0, 10), int(self.word_count * 0.2))
+            for num in nums:
+                ind = random.choice(range(0, self.word_count))
+                words[ind] = words[ind] + str(num)
         delimiter = " "
-        sentence = delimiter.join(sentence)
-        words.close()
+        sentence = delimiter.join(words)
+        words_file.close()
         return sentence
 
     def draw_sentence(self):
         """
         Function that draws the sentence on the screen, it colors the letters with different colors based on the
-        accuracy of the entered words where:
+        accuracy of the entered words_file where:
         - correct entered letter: white
         - wrong entered letter: Red
         - extra entered letter: dark red
@@ -214,7 +240,7 @@ class SpeedTypeTest:
             fontObj = pygame.font.Font(self.FONT_TYPE, self.FONT_SIZE + 10)
             textSurfaceObj = fontObj.render('|', True, self.LIGHT_CYAN)
             textRectObj = textSurfaceObj.get_rect()
-            textRectObj.center = (cursor_x, cursor_y)
+            textRectObj.center = (cursor_x, cursor_y + 5)
             self.SCREEN.blit(textSurfaceObj, textRectObj)
 
     def reset_game(self):
@@ -238,45 +264,52 @@ class SpeedTypeTest:
         :return: None
         """
         # drawing the reset button
-        self.draw_box_with_txt((self.WINDOWWIDTH / 2, self.WINDOWHEIGHT - 45), self.reset_box_size, 'Reset', 12,
-                               self.BATTLESHIP_GRAY, self.WHITE)
-        txt_pos = (self.MARGIN, self.word_count_box_size[1] + self.word_count_box_size[2] / 2)
-        self.draw_txt('Word count:', 16, self.WHITE, center_position=txt_pos)
+        center_position = (self.RESET_BOX_SIZE[0] + self.RESET_BOX_SIZE[2] / 2,
+                           self.RESET_BOX_SIZE[1] + self.RESET_BOX_SIZE[3] / 2)
+        self.draw_txt('Reset', self.BUTTONS_FONT_SIZE, self.WHITE,
+                      center_position=center_position,
+                      box_size=self.RESET_BOX_SIZE, box_color=self.BATTLESHIP_GRAY)
+        txt_pos = (self.MARGIN, self.WORD_COUNT_BOX_SIZE[1] + self.WORD_COUNT_BOX_SIZE[2] / 2)
+        self.draw_txt('Word count:', self.BUTTONS_FONT_SIZE, self.WHITE, center_position=txt_pos)
 
         # drawing the word count buttons
         for count in range(10, 40, 10):
-            pos_shift = self.boxes_shift * (count / 10 - 1)
-            center_position = (self.word_count_box_size[0] + pos_shift + self.word_count_box_size[2] / 2,
-                               self.word_count_box_size[1] + self.word_count_box_size[2] / 2)
+            pos_shift = self.BOXES_SHIFT * (count / 10 - 1)
+            center_position = (self.WORD_COUNT_BOX_SIZE[0] + pos_shift + self.WORD_COUNT_BOX_SIZE[2] / 2,
+                               self.WORD_COUNT_BOX_SIZE[1] + self.WORD_COUNT_BOX_SIZE[2] / 2)
 
-            self.draw_txt(str(count), 16, self.WHITE, center_position=center_position)
+            self.draw_txt(str(count), self.BUTTONS_FONT_SIZE, self.BITCOIN_ORANGE if count == self.word_count else
+                        self.WHITE, center_position=center_position)
+        center_position = (center_position[0] + 25, center_position[1]-3)
+        self.draw_txt('|', 24, self.WHITE, center_position=center_position)
 
-    def draw_box_with_txt(self, center_position, box_size, txt, txt_size, box_color, txt_color):
-        """
-        # this funtion renders a box with text.
-        :param center_position: the center position of the box
-        :param box_size: box size
-        :param txt: the text to be rendered
-        :param txt_size: the size of the font
-        :param box_color: the color of the box
-        :param txt_color: the color of the text
-        """
-        pygame.draw.rect(self.SCREEN, box_color, box_size)
-        fontObj = pygame.font.Font(self.FONT_TYPE, txt_size)
-        textSurfaceObj = fontObj.render(txt, True, txt_color)
-        textRectObj = textSurfaceObj.get_rect()
-        textRectObj.center = center_position
-        self.SCREEN.blit(textSurfaceObj, textRectObj)
+        spacing = self.NUMBER_BUTTON[0] - center_position[0]
+        # drawing punctuation and numbers button
+        center_position = (self.NUMBER_BUTTON[0] + self.NUMBER_BUTTON[2] / 2,
+                           self.NUMBER_BUTTON[1] + self.NUMBER_BUTTON[3] / 2)
+        self.draw_txt("Numbers", self.BUTTONS_FONT_SIZE, self.BITCOIN_ORANGE if self.numbers else self.WHITE,
+                      center_position=center_position)
+        center_position = (center_position[0] + self.NUMBER_BUTTON[2] / 2 + spacing, center_position[1] - 3)
+        self.draw_txt('|', 24, self.WHITE, center_position=center_position)
 
-    def draw_txt(self, txt, txt_size, txt_color, left_corner=None, center_position=None):
+        center_position = (self.NUMBER_BUTTON[0] + 2*spacing + self.NUMBER_BUTTON[2] + self.PUNCTUATION_BUTTON[2] / 2,
+                           self.PUNCTUATION_BUTTON[1] + self.PUNCTUATION_BUTTON[3] / 2)
+        self.draw_txt("Punctuation", self.BUTTONS_FONT_SIZE, self.BITCOIN_ORANGE if self.punctuations else self.WHITE,
+                      center_position=center_position)
+
+    def draw_txt(self, txt, txt_size, txt_color, left_corner=None, center_position=None, box_size=None, box_color=None):
         """
-        # this funtion renders text.
+        # this funtion renders a text and a box if specified.
         :param txt: the text to be rendered
         :param txt_size: the size of the font
         :param txt_color: the color of the text
         :param left_corner: the left corner position of the box, default None
         :param center_position: the center position of the box, default None
+        :param box_size: box size, default None
+        :param box_color: the color of the box, default None
         """
+        if box_size:
+            pygame.draw.rect(self.SCREEN, box_color, box_size)
         fontObj = pygame.font.Font(self.FONT_TYPE, txt_size)
         textSurfaceObj = fontObj.render(txt, True, txt_color)
         textRectObj = textSurfaceObj.get_rect()
@@ -319,7 +352,8 @@ class SpeedTypeTest:
                        f'Accuracy: {self.accuracy:.2f} %',
                        f'Typing speed: {ceil(self.speed)} wpm']
             for ind, txt in enumerate(results):
-                self.draw_txt(txt, self.FONT_SIZE, self.BITCOIN_ORANGE, left_corner=(100, self.WINDOWHEIGHT / 2 + 100 + ind * 40))
+                self.draw_txt(txt, self.FONT_SIZE, self.BITCOIN_ORANGE,
+                              left_corner=(100, self.WINDOWHEIGHT / 2 + 100 + ind * 40))
                 # self.print_results_text(txt, ind * 40, self.FONT_SIZE)
             pygame.display.update()
 
