@@ -23,9 +23,9 @@ class SpeedTypeTest:
     LIGHT_CYAN = (224, 255, 255)
 
     # using Google's font - RobotoMono-Regular font. https://fonts.google.com/specimen/IBM+Plex+Mono?query=mono
-    FONT_TYPE = "RobotoMono-Regular.ttf"
+    FONT_TYPE = "typing_speed_test\RobotoMono-Regular.ttf"
     # https://www.mit.edu/~ecprice/wordlist.10000 link to data file
-    DATA_FILE_NAME = "wordlist.10000.txt"
+    DATA_FILE_NAME = "typing_speed_test\wordlist.10000.txt"
     # the purpose of using a monospace font is to deal with wrong typed letters so the text surface won't change size
 
     FONT_SIZE = 20
