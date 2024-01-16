@@ -5,8 +5,8 @@ from math import ceil
 
 
 class SpeedTypeTest:
-    WINDOWWIDTH = 1200  # 640  # size of window's width in pixels
-    WINDOWHEIGHT = 800  # 480  # size of windows' height in pixels
+    WINDOWWIDTH = 1100  # 640  # size of window's width in pixels
+    WINDOWHEIGHT = 600  # 480  # size of windows' height in pixels
 
     ALPHABET = 'abcdefghijklmnopqrstuvwxyz| :;,._!ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
     PUNCTUATION_MARKS = [':', '.', ',', '!', ';']
@@ -23,14 +23,14 @@ class SpeedTypeTest:
     LIGHT_CYAN = (224, 255, 255)
 
     # using Google's font - RobotoMono-Regular font. https://fonts.google.com/specimen/IBM+Plex+Mono?query=mono
-    FONT_TYPE = "typing_speed_test\RobotoMono-Regular.ttf"
+    FONT_TYPE = "RobotoMono-Regular.ttf"
     # https://www.mit.edu/~ecprice/wordlist.10000 link to data file
-    DATA_FILE_NAME = "typing_speed_test\wordlist.10000.txt"
+    DATA_FILE_NAME = "wordlist.10000.txt"
     # the purpose of using a monospace font is to deal with wrong typed letters so the text surface won't change size
 
-    FONT_SIZE = 20
+    FONT_SIZE = 18
     BG_COLOR = BITCOIN_GRAY
-    MARGIN = 150
+    MARGIN = 100
 
     RESET_BOX_SIZE = (WINDOWWIDTH / 2 - 30, WINDOWHEIGHT - 100, 60, 30)
     WORD_COUNT_BOX_SIZE = (210, 100, 30, 30)  # (x_top_left_corner, y_top_left, width, height)
@@ -111,6 +111,7 @@ class SpeedTypeTest:
                                 self.WORD_COUNT_BOX_SIZE[2] and self.word_count != 30:
                             self.word_count = 30
                             self.reset_game()
+                    # checking if the user pressed on Numbers/Punctuation mode
                     if self.NUMBER_BUTTON[1] <= y <= self.NUMBER_BUTTON[1] + self.NUMBER_BUTTON[3]:
                         if self.NUMBER_BUTTON[0] <= x <= self.NUMBER_BUTTON[0] + self.NUMBER_BUTTON[2]:
                             self.numbers = not self.numbers
@@ -203,17 +204,18 @@ class SpeedTypeTest:
                 font = pygame.freetype.Font(self.FONT_TYPE, self.FONT_SIZE)
                 # origin is the position of the original text and font_height is the scaled height of the font in pixels
                 font.origin = True
-                text_surf_rect = font.get_rect(self.ALPHABET + '                         ')  # (x,y,w,h)
+                text_surf_rect = font.get_rect(self.ALPHABET + self.ALPHABET)  # (x,y,w,h)
+                # text_surf_rect = font.get_rect(self.ALPHABET + '                         ')  # (x,y,w,h)
                 baseline = text_surf_rect.y
                 text_surf = pygame.Surface(text_surf_rect.size)
-                text_surf_rect.topleft = (self.MARGIN - 50, self.WINDOWHEIGHT // 2 - 100 + lines_spacing * line_ind)
+                text_surf_rect.topleft = (self.MARGIN, self.WINDOWHEIGHT // 2 - 100 + lines_spacing * line_ind)
                 text_surf.fill(self.BG_COLOR)
                 current_h_adv = 0
                 line_ind += 1
 
             if i == len(input_sen_words) - 1:  # setting the cursor position
                 cursor_y = text_surf_rect.y
-                cursor_x = self.MARGIN - 50 + current_h_adv + len(in_word) * self.letter_width
+                cursor_x = self.MARGIN + current_h_adv + len(in_word) * self.letter_width
 
             for ind in range(min(len(word), len(in_word))):
                 if word[ind] == in_word[ind]:
@@ -269,7 +271,7 @@ class SpeedTypeTest:
         self.draw_txt('Reset', self.BUTTONS_FONT_SIZE, self.WHITE,
                       center_position=center_position,
                       box_size=self.RESET_BOX_SIZE, box_color=self.BATTLESHIP_GRAY)
-        txt_pos = (self.MARGIN, self.WORD_COUNT_BOX_SIZE[1] + self.WORD_COUNT_BOX_SIZE[2] / 2)
+        txt_pos = (self.MARGIN + self.WORD_COUNT_BOX_SIZE[1]/2, self.WORD_COUNT_BOX_SIZE[1] + self.WORD_COUNT_BOX_SIZE[2] / 2)
         self.draw_txt('Word count:', self.BUTTONS_FONT_SIZE, self.WHITE, center_position=txt_pos)
 
         # drawing the word count buttons
