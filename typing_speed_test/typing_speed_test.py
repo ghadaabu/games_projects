@@ -4,7 +4,7 @@ import pygame.freetype
 from math import ceil
 
 
-class SpeedTypeTest:
+class words_test:
     WINDOWWIDTH = 1100  # 640  # size of window's width in pixels
     WINDOWHEIGHT = 600  # 480  # size of windows' height in pixels
 
@@ -33,7 +33,10 @@ class SpeedTypeTest:
     MARGIN = 100
 
     RESET_BOX_SIZE = (WINDOWWIDTH / 2 - 30, WINDOWHEIGHT - 100, 60, 30)
-    WORD_COUNT_BOX_SIZE = (210, 100, 30, 30)  # (x_top_left_corner, y_top_left, width, height)
+
+    MENU_BAR_top_left = (MARGIN, 100)  # (x_top_left_corner, y_top_left)
+
+    WORD_COUNT_BOX_SIZE = (241, 100, 30, 30)  # (x_top_left_corner, y_top_left, width, height)
     BOXES_SHIFT = 40  # the space between the options
     BUTTONS_FONT_SIZE = 16
 
@@ -68,8 +71,17 @@ class SpeedTypeTest:
         self.letter_width = self.font_metrics['a'][4]
         self.row_len = self.WINDOWWIDTH - 2 * self.MARGIN
 
-        self.NUMBER_BUTTON = (340, 100, len("numbers")*self.letter_width, 30)  # (x_top_left, y_top_left, x_size, y_size)
-        self.PUNCTUATION_BUTTON = (450, 100, len("Punctuation")*self.letter_width, 30)  # (x_top_left, y_top_left, x_size, y_size)
+        self.MENU_BAR_ELEMENTS = {'Words': (self.MARGIN, self.MARGIN, len("Words") * self.letter_width, 30),
+                                  'Time': (self.MARGIN + 76, self.MARGIN, len("Time") * self.letter_width, 30),
+                                  '10': (self.MARGIN + 141, self.MARGIN, 30, 30),
+                                  '20': (self.MARGIN + 173, self.MARGIN, 30, 30),
+                                  '30': (self.MARGIN + 205, self.MARGIN, 30, 30),
+                                  'Numbers': (self.MARGIN + 258, self.MARGIN, len("Numbers") * self.letter_width, 30),
+                                  'Punctuation': (self.MARGIN + 356, self.MARGIN, len("Punctuation") * self.letter_width, 30)}
+        self.NUMBER_BUTTON = (
+            358, 100, len("numbers") * self.letter_width, 30)  # (x_top_left, y_top_left, x_size, y_size)
+        self.PUNCTUATION_BUTTON = (
+            456, 100, len("Punctuation") * self.letter_width, 30)  # (x_top_left, y_top_left, x_size, y_size)
 
     def run_game(self):
         self.reset_game()
@@ -97,26 +109,30 @@ class SpeedTypeTest:
                             and self.RESET_BOX_SIZE[1] <= y <= self.RESET_BOX_SIZE[1] + self.RESET_BOX_SIZE[3]:
                         self.reset_game()
 
-                    # checking if the user selected new word count
-                    elif self.WORD_COUNT_BOX_SIZE[1] <= y <= self.WORD_COUNT_BOX_SIZE[1] + self.WORD_COUNT_BOX_SIZE[3]:
-                        if self.WORD_COUNT_BOX_SIZE[0] <= x <= self.WORD_COUNT_BOX_SIZE[0] + self.WORD_COUNT_BOX_SIZE[2] \
+                    # checking if the user pressed on a key from the menu bar
+                    elif self.MENU_BAR_ELEMENTS['Words'][1] <= y <= self.MENU_BAR_ELEMENTS['Words'][1] + self.MENU_BAR_ELEMENTS['Words'][3]:
+                        # check if Time mode is selected
+                        if self.MENU_BAR_ELEMENTS['Time'][0] <= x <= self.MENU_BAR_ELEMENTS['Time'][0] + self.MENU_BAR_ELEMENTS['Time'][2]:
+                            pass
+                        # check if word count is selected
+                        elif self.MENU_BAR_ELEMENTS['10'][0] <= x <= self.MENU_BAR_ELEMENTS['10'][0] + self.MENU_BAR_ELEMENTS['10'][2] \
                                 and self.word_count != 10:
                             self.word_count = 10
                             self.reset_game()
-                        elif self.WORD_COUNT_BOX_SIZE[0] <= x - self.BOXES_SHIFT <= self.WORD_COUNT_BOX_SIZE[0] + \
-                                self.WORD_COUNT_BOX_SIZE[2] and self.word_count != 20:
+                        elif self.MENU_BAR_ELEMENTS['20'][0] <= x <= self.MENU_BAR_ELEMENTS['20'][0] + self.MENU_BAR_ELEMENTS['20'][2] \
+                                and self.word_count != 20:
                             self.word_count = 20
                             self.reset_game()
-                        elif self.WORD_COUNT_BOX_SIZE[0] <= x - 2 * self.BOXES_SHIFT <= self.WORD_COUNT_BOX_SIZE[0] + \
-                                self.WORD_COUNT_BOX_SIZE[2] and self.word_count != 30:
+                        elif self.MENU_BAR_ELEMENTS['30'][0] <= x <= self.MENU_BAR_ELEMENTS['30'][0] + self.MENU_BAR_ELEMENTS['30'][2] \
+                                and self.word_count != 30:
                             self.word_count = 30
                             self.reset_game()
-                    # checking if the user pressed on Numbers/Punctuation mode
-                    if self.NUMBER_BUTTON[1] <= y <= self.NUMBER_BUTTON[1] + self.NUMBER_BUTTON[3]:
-                        if self.NUMBER_BUTTON[0] <= x <= self.NUMBER_BUTTON[0] + self.NUMBER_BUTTON[2]:
+                        # check if Numbers is selected
+                        elif self.MENU_BAR_ELEMENTS['Numbers'][0] <= x <= self.MENU_BAR_ELEMENTS['Numbers'][0] + self.MENU_BAR_ELEMENTS['Numbers'][2]:
                             self.numbers = not self.numbers
                             self.reset_game()
-                        elif self.PUNCTUATION_BUTTON[0] <= x <= self.PUNCTUATION_BUTTON[0] + self.PUNCTUATION_BUTTON[2]:
+                        # check if Punctuation is selected
+                        elif self.MENU_BAR_ELEMENTS['Punctuation'][0] <= x <= self.MENU_BAR_ELEMENTS['Punctuation'][0] + self.MENU_BAR_ELEMENTS['Punctuation'][2]:
                             self.punctuations = not self.punctuations
                             self.reset_game()
 
@@ -266,13 +282,68 @@ class SpeedTypeTest:
         :return: None
         """
         # drawing the reset button
+        spacing = 10
+        pos_shift = 8
         center_position = (self.RESET_BOX_SIZE[0] + self.RESET_BOX_SIZE[2] / 2,
                            self.RESET_BOX_SIZE[1] + self.RESET_BOX_SIZE[3] / 2)
         self.draw_txt('Reset', self.BUTTONS_FONT_SIZE, self.WHITE,
                       center_position=center_position,
                       box_size=self.RESET_BOX_SIZE, box_color=self.BATTLESHIP_GRAY)
-        txt_pos = (self.MARGIN + self.WORD_COUNT_BOX_SIZE[1]/2, self.WORD_COUNT_BOX_SIZE[1] + self.WORD_COUNT_BOX_SIZE[2] / 2)
-        self.draw_txt('Word count:', self.BUTTONS_FONT_SIZE, self.WHITE, center_position=txt_pos)
+
+        # Drawing the menu bar
+        pos = (self.MENU_BAR_ELEMENTS['Words'][0], self.MENU_BAR_ELEMENTS['Words'][1])
+        self.draw_txt('Words', self.BUTTONS_FONT_SIZE, self.BITCOIN_ORANGE, left_corner=pos)
+
+        pos = (pos[0] + len('Words') * self.letter_width, pos[1])
+        self.draw_txt('|', 24, self.WHITE, left_corner=(pos[0], pos[1] - pos_shift))
+
+        pos = (self.MENU_BAR_ELEMENTS['Time'][0], self.MENU_BAR_ELEMENTS['Time'][1])
+        self.draw_txt('Time', self.BUTTONS_FONT_SIZE, self.WHITE, left_corner=pos)
+
+        pos = (pos[0] + len('Time') * self.letter_width, pos[1])
+        self.draw_txt('|', 24, self.WHITE, left_corner=(pos[0], pos[1] - pos_shift))
+
+        for count in range(10, 40, 10):
+            pos = (self.MENU_BAR_ELEMENTS[str(count)][0], self.MENU_BAR_ELEMENTS[str(count)][1])
+            self.draw_txt(str(count), self.BUTTONS_FONT_SIZE,
+                          self.BITCOIN_ORANGE if count == self.word_count else self.WHITE, left_corner=pos)
+
+        pos = (pos[0] + len(str(count)) * self.letter_width + spacing, pos[1])
+        self.draw_txt('|', 24, self.WHITE, left_corner=(pos[0], pos[1] - pos_shift))
+
+        # drawing punctuation and numbers button
+        pos = (self.MENU_BAR_ELEMENTS['Numbers'][0], self.MENU_BAR_ELEMENTS['Numbers'][1])
+        self.draw_txt("Numbers", self.BUTTONS_FONT_SIZE, self.BITCOIN_ORANGE if self.numbers else self.WHITE,
+                      left_corner=pos)
+
+        pos = (pos[0] + len('Numbers') * self.letter_width, pos[1])
+        self.draw_txt('|', 24, self.WHITE, left_corner=(pos[0], pos[1] - pos_shift))
+
+        pos = (self.MENU_BAR_ELEMENTS['Punctuation'][0], self.MENU_BAR_ELEMENTS['Punctuation'][1])
+        self.draw_txt("Punctuation", self.BUTTONS_FONT_SIZE, self.BITCOIN_ORANGE if self.punctuations else self.WHITE,
+                      left_corner=pos)
+
+    def draw_game2(self):
+        """
+        Function that draws the game, it draws the reset button and the word count buttons.
+        :return: None
+        """
+        # drawing the reset button
+        center_position = (self.RESET_BOX_SIZE[0] + self.RESET_BOX_SIZE[2] / 2,
+                           self.RESET_BOX_SIZE[1] + self.RESET_BOX_SIZE[3] / 2)
+        self.draw_txt('Reset', self.BUTTONS_FONT_SIZE, self.WHITE,
+                      center_position=center_position,
+                      box_size=self.RESET_BOX_SIZE, box_color=self.BATTLESHIP_GRAY)
+        txt_pos = (self.MARGIN + self.WORD_COUNT_BOX_SIZE[1] / 2,
+                   self.WORD_COUNT_BOX_SIZE[1] + self.WORD_COUNT_BOX_SIZE[2] / 2)
+        self.draw_txt('Words', self.BUTTONS_FONT_SIZE, self.BITCOIN_ORANGE, center_position=txt_pos)
+        # txt_pos = (self.MARGIN + self.WORD_COUNT_BOX_SIZE[1] / 2,
+        #            self.WORD_COUNT_BOX_SIZE[1] + self.WORD_COUNT_BOX_SIZE[2] / 2)
+        # self.draw_txt('Words', self.BUTTONS_FONT_SIZE, self.BITCOIN_ORANGE, center_position=txt_pos)
+
+        center_position = (
+            self.WORD_COUNT_BOX_SIZE[0] - 5, self.WORD_COUNT_BOX_SIZE[1] + self.WORD_COUNT_BOX_SIZE[2] / 2 - 3)
+        self.draw_txt('|', 24, self.WHITE, center_position=center_position)
 
         # drawing the word count buttons
         for count in range(10, 40, 10):
@@ -281,8 +352,8 @@ class SpeedTypeTest:
                                self.WORD_COUNT_BOX_SIZE[1] + self.WORD_COUNT_BOX_SIZE[2] / 2)
 
             self.draw_txt(str(count), self.BUTTONS_FONT_SIZE, self.BITCOIN_ORANGE if count == self.word_count else
-                        self.WHITE, center_position=center_position)
-        center_position = (center_position[0] + 25, center_position[1]-3)
+            self.WHITE, center_position=center_position)
+        center_position = (center_position[0] + 25, center_position[1] - 3)
         self.draw_txt('|', 24, self.WHITE, center_position=center_position)
 
         spacing = self.NUMBER_BUTTON[0] - center_position[0]
@@ -294,7 +365,7 @@ class SpeedTypeTest:
         center_position = (center_position[0] + self.NUMBER_BUTTON[2] / 2 + spacing, center_position[1] - 3)
         self.draw_txt('|', 24, self.WHITE, center_position=center_position)
 
-        center_position = (self.NUMBER_BUTTON[0] + 2*spacing + self.NUMBER_BUTTON[2] + self.PUNCTUATION_BUTTON[2] / 2,
+        center_position = (self.NUMBER_BUTTON[0] + 2 * spacing + self.NUMBER_BUTTON[2] + self.PUNCTUATION_BUTTON[2] / 2,
                            self.PUNCTUATION_BUTTON[1] + self.PUNCTUATION_BUTTON[3] / 2)
         self.draw_txt("Punctuation", self.BUTTONS_FONT_SIZE, self.BITCOIN_ORANGE if self.punctuations else self.WHITE,
                       center_position=center_position)
@@ -360,4 +431,10 @@ class SpeedTypeTest:
             pygame.display.update()
 
 
-SpeedTypeTest().run_game()
+if __name__ == '__main__':
+    words_test().run_game()
+
+
+class speed_typing_test:
+    def __init__(self):
+        pass
