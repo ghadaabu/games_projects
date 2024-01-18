@@ -4,7 +4,7 @@ import pygame.freetype
 from math import ceil
 
 
-class words_test:
+class WordsMode:
     WINDOWWIDTH = 1100  # 640  # size of window's width in pixels
     WINDOWHEIGHT = 600  # 480  # size of windows' height in pixels
 
@@ -77,7 +77,8 @@ class words_test:
                                   '20': (self.MARGIN + 173, self.MARGIN, 30, 30),
                                   '30': (self.MARGIN + 205, self.MARGIN, 30, 30),
                                   'Numbers': (self.MARGIN + 258, self.MARGIN, len("Numbers") * self.letter_width, 30),
-                                  'Punctuation': (self.MARGIN + 356, self.MARGIN, len("Punctuation") * self.letter_width, 30)}
+                                  'Punctuation': (
+                                  self.MARGIN + 356, self.MARGIN, len("Punctuation") * self.letter_width, 30)}
         self.NUMBER_BUTTON = (
             358, 100, len("numbers") * self.letter_width, 30)  # (x_top_left, y_top_left, x_size, y_size)
         self.PUNCTUATION_BUTTON = (
@@ -110,29 +111,36 @@ class words_test:
                         self.reset_game()
 
                     # checking if the user pressed on a key from the menu bar
-                    elif self.MENU_BAR_ELEMENTS['Words'][1] <= y <= self.MENU_BAR_ELEMENTS['Words'][1] + self.MENU_BAR_ELEMENTS['Words'][3]:
+                    elif self.MENU_BAR_ELEMENTS['Words'][1] <= y <= self.MENU_BAR_ELEMENTS['Words'][1] + \
+                            self.MENU_BAR_ELEMENTS['Words'][3]:
                         # check if Time mode is selected
-                        if self.MENU_BAR_ELEMENTS['Time'][0] <= x <= self.MENU_BAR_ELEMENTS['Time'][0] + self.MENU_BAR_ELEMENTS['Time'][2]:
+                        if self.MENU_BAR_ELEMENTS['Time'][0] <= x <= self.MENU_BAR_ELEMENTS['Time'][0] + \
+                                self.MENU_BAR_ELEMENTS['Time'][2]:
                             pass
                         # check if word count is selected
-                        elif self.MENU_BAR_ELEMENTS['10'][0] <= x <= self.MENU_BAR_ELEMENTS['10'][0] + self.MENU_BAR_ELEMENTS['10'][2] \
+                        elif self.MENU_BAR_ELEMENTS['10'][0] <= x <= self.MENU_BAR_ELEMENTS['10'][0] + \
+                                self.MENU_BAR_ELEMENTS['10'][2] \
                                 and self.word_count != 10:
                             self.word_count = 10
                             self.reset_game()
-                        elif self.MENU_BAR_ELEMENTS['20'][0] <= x <= self.MENU_BAR_ELEMENTS['20'][0] + self.MENU_BAR_ELEMENTS['20'][2] \
+                        elif self.MENU_BAR_ELEMENTS['20'][0] <= x <= self.MENU_BAR_ELEMENTS['20'][0] + \
+                                self.MENU_BAR_ELEMENTS['20'][2] \
                                 and self.word_count != 20:
                             self.word_count = 20
                             self.reset_game()
-                        elif self.MENU_BAR_ELEMENTS['30'][0] <= x <= self.MENU_BAR_ELEMENTS['30'][0] + self.MENU_BAR_ELEMENTS['30'][2] \
+                        elif self.MENU_BAR_ELEMENTS['30'][0] <= x <= self.MENU_BAR_ELEMENTS['30'][0] + \
+                                self.MENU_BAR_ELEMENTS['30'][2] \
                                 and self.word_count != 30:
                             self.word_count = 30
                             self.reset_game()
                         # check if Numbers is selected
-                        elif self.MENU_BAR_ELEMENTS['Numbers'][0] <= x <= self.MENU_BAR_ELEMENTS['Numbers'][0] + self.MENU_BAR_ELEMENTS['Numbers'][2]:
+                        elif self.MENU_BAR_ELEMENTS['Numbers'][0] <= x <= self.MENU_BAR_ELEMENTS['Numbers'][0] + \
+                                self.MENU_BAR_ELEMENTS['Numbers'][2]:
                             self.numbers = not self.numbers
                             self.reset_game()
                         # check if Punctuation is selected
-                        elif self.MENU_BAR_ELEMENTS['Punctuation'][0] <= x <= self.MENU_BAR_ELEMENTS['Punctuation'][0] + self.MENU_BAR_ELEMENTS['Punctuation'][2]:
+                        elif self.MENU_BAR_ELEMENTS['Punctuation'][0] <= x <= self.MENU_BAR_ELEMENTS['Punctuation'][0] + \
+                                self.MENU_BAR_ELEMENTS['Punctuation'][2]:
                             self.punctuations = not self.punctuations
                             self.reset_game()
 
@@ -323,53 +331,6 @@ class words_test:
         self.draw_txt("Punctuation", self.BUTTONS_FONT_SIZE, self.BITCOIN_ORANGE if self.punctuations else self.WHITE,
                       left_corner=pos)
 
-    def draw_game2(self):
-        """
-        Function that draws the game, it draws the reset button and the word count buttons.
-        :return: None
-        """
-        # drawing the reset button
-        center_position = (self.RESET_BOX_SIZE[0] + self.RESET_BOX_SIZE[2] / 2,
-                           self.RESET_BOX_SIZE[1] + self.RESET_BOX_SIZE[3] / 2)
-        self.draw_txt('Reset', self.BUTTONS_FONT_SIZE, self.WHITE,
-                      center_position=center_position,
-                      box_size=self.RESET_BOX_SIZE, box_color=self.BATTLESHIP_GRAY)
-        txt_pos = (self.MARGIN + self.WORD_COUNT_BOX_SIZE[1] / 2,
-                   self.WORD_COUNT_BOX_SIZE[1] + self.WORD_COUNT_BOX_SIZE[2] / 2)
-        self.draw_txt('Words', self.BUTTONS_FONT_SIZE, self.BITCOIN_ORANGE, center_position=txt_pos)
-        # txt_pos = (self.MARGIN + self.WORD_COUNT_BOX_SIZE[1] / 2,
-        #            self.WORD_COUNT_BOX_SIZE[1] + self.WORD_COUNT_BOX_SIZE[2] / 2)
-        # self.draw_txt('Words', self.BUTTONS_FONT_SIZE, self.BITCOIN_ORANGE, center_position=txt_pos)
-
-        center_position = (
-            self.WORD_COUNT_BOX_SIZE[0] - 5, self.WORD_COUNT_BOX_SIZE[1] + self.WORD_COUNT_BOX_SIZE[2] / 2 - 3)
-        self.draw_txt('|', 24, self.WHITE, center_position=center_position)
-
-        # drawing the word count buttons
-        for count in range(10, 40, 10):
-            pos_shift = self.BOXES_SHIFT * (count / 10 - 1)
-            center_position = (self.WORD_COUNT_BOX_SIZE[0] + pos_shift + self.WORD_COUNT_BOX_SIZE[2] / 2,
-                               self.WORD_COUNT_BOX_SIZE[1] + self.WORD_COUNT_BOX_SIZE[2] / 2)
-
-            self.draw_txt(str(count), self.BUTTONS_FONT_SIZE, self.BITCOIN_ORANGE if count == self.word_count else
-            self.WHITE, center_position=center_position)
-        center_position = (center_position[0] + 25, center_position[1] - 3)
-        self.draw_txt('|', 24, self.WHITE, center_position=center_position)
-
-        spacing = self.NUMBER_BUTTON[0] - center_position[0]
-        # drawing punctuation and numbers button
-        center_position = (self.NUMBER_BUTTON[0] + self.NUMBER_BUTTON[2] / 2,
-                           self.NUMBER_BUTTON[1] + self.NUMBER_BUTTON[3] / 2)
-        self.draw_txt("Numbers", self.BUTTONS_FONT_SIZE, self.BITCOIN_ORANGE if self.numbers else self.WHITE,
-                      center_position=center_position)
-        center_position = (center_position[0] + self.NUMBER_BUTTON[2] / 2 + spacing, center_position[1] - 3)
-        self.draw_txt('|', 24, self.WHITE, center_position=center_position)
-
-        center_position = (self.NUMBER_BUTTON[0] + 2 * spacing + self.NUMBER_BUTTON[2] + self.PUNCTUATION_BUTTON[2] / 2,
-                           self.PUNCTUATION_BUTTON[1] + self.PUNCTUATION_BUTTON[3] / 2)
-        self.draw_txt("Punctuation", self.BUTTONS_FONT_SIZE, self.BITCOIN_ORANGE if self.punctuations else self.WHITE,
-                      center_position=center_position)
-
     def draw_txt(self, txt, txt_size, txt_color, left_corner=None, center_position=None, box_size=None, box_color=None):
         """
         # this funtion renders a text and a box if specified.
@@ -432,9 +393,9 @@ class words_test:
 
 
 if __name__ == '__main__':
-    words_test().run_game()
+    WordsMode().run_game()
 
 
-class speed_typing_test:
+class SpeedTypingTest:
     def __init__(self):
         pass
