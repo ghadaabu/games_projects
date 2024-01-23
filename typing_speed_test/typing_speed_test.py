@@ -22,6 +22,10 @@ class Constants:
     BITCOIN_ORANGE = (242, 169, 0)
     LIGHT_CYAN = (224, 255, 255)
 
+    TEXT_COLOR = {'dark': WHITE, 'light': BLACK}
+    # BG_COLOR = {'dark': BITCOIN_GRAY, 'light': WHITE}
+    BG_COLOR = BITCOIN_GRAY
+
     # using Google's font - RobotoMono-Regular font. https://fonts.google.com/specimen/IBM+Plex+Mono?query=mono
     FONT_TYPE = "RobotoMono-Regular.ttf"
     # https://www.mit.edu/~ecprice/wordlist.10000 link to data file
@@ -29,14 +33,14 @@ class Constants:
     # the purpose of using a monospace font is to deal with wrong typed letters so the text surface won't change size
 
     FONT_SIZE = 20
-    BG_COLOR = BITCOIN_GRAY
+
     MARGIN = 100
 
     RESET_BOX_SIZE = (WINDOWWIDTH / 2 - 30, WINDOWHEIGHT - 100, 60, 30)
 
     BUTTONS_FONT_SIZE = 16
     LINES_SPACING = 50
-    TIMER_POSTITION = (WINDOWWIDTH // 2, MARGIN + 50)
+    TIMER_POSITION = (WINDOWWIDTH // 2, MARGIN + 50)
 
 
 # -------------------------- WordsMode ---------------------------------------------------------------------------------
@@ -83,7 +87,7 @@ class WordsMode(Constants):
                                   'Punctuation': (
                                       self.MARGIN + 356, self.MARGIN, len("Punctuation") * self.letter_width, 30)}
 
-    def run_game(self):
+    def run_game(self, theme):
         self.reset_game()
         while True:
             if self.update_screen:
@@ -115,7 +119,7 @@ class WordsMode(Constants):
                         # check if Time mode is selected
                         if self.MENU_BAR_ELEMENTS['Time'][0] <= x <= self.MENU_BAR_ELEMENTS['Time'][0] + \
                                 self.MENU_BAR_ELEMENTS['Time'][2]:
-                            return False
+                            return False, theme
                         # check if word count is selected
                         elif self.MENU_BAR_ELEMENTS['10'][0] <= x <= self.MENU_BAR_ELEMENTS['10'][0] + \
                                 self.MENU_BAR_ELEMENTS['10'][2] \
@@ -161,11 +165,12 @@ class WordsMode(Constants):
                             pass
                         # checking if the test ended where all the letters are entered
                         input_words = self.input_sentence.split(' ')
-                        if len(input_words) >= self.word_count and len(input_words[-1]) >= len(
-                                self.sentence.split(' ')[-1]):
+                        if len(input_words) >= self.word_count:
+                                # and len(input_words[-1]) >= len(
+                                # self.sentence.split(' ')[-1]):
                             self.SCREEN.fill(self.BG_COLOR)
                             self.draw_game()
-                            self.draw_sentence()
+                            # self.draw_sentence()
                             self.active = False
                             self.end = True
                             self.show_result()
@@ -218,6 +223,12 @@ class WordsMode(Constants):
 
         cursor_x = None
         cursor_y = None
+
+        # # if the test has started, draws the word-counter above the sentence
+        # if self.active:
+        #     self.draw_txt(f'{len(input_sen_words) - 1} / {self.word_count}', self.FONT_SIZE, self.BITCOIN_ORANGE,
+        #                   left_corner=self.TIMER_POSITION)
+
         for i, word in enumerate(sentence_words):
             in_word = input_sen_words[i] if i < len(input_sen_words) else ''
             # check if there is enough space left on the current line for the current word, if not creates a new line.
@@ -263,7 +274,7 @@ class WordsMode(Constants):
         # drawing the cursor on the screen
         if cursor_x is not None and cursor_y is not None:
             fontObj = pygame.font.Font(self.FONT_TYPE, self.FONT_SIZE + 10)
-            textSurfaceObj = fontObj.render('|', True, self.LIGHT_CYAN)
+            textSurfaceObj = fontObj.render('|', True, self.BITCOIN_ORANGE)
             textRectObj = textSurfaceObj.get_rect()
             textRectObj.center = (cursor_x, cursor_y + 5)
             self.SCREEN.blit(textSurfaceObj, textRectObj)
@@ -381,12 +392,14 @@ class WordsMode(Constants):
             # Calculate speed (word per minute wpm)
             self.speed = len(self.input_sentence) * 60 / (5 * self.total_time)
 
+            if len(self.input_sentence) < 0.5 * len(self.sentence):
+                self.accuracy = 'NA'
             results = [f'Total time: {self.total_time:.2f} secs',
-                       f'Accuracy: {self.accuracy:.2f} %',
+                       f'Accuracy: {self.accuracy:.2f} %' if self.accuracy != 'NA' else f'Accuracy: {self.accuracy}',
                        f'Typing speed: {ceil(self.speed)} wpm']
             for ind, txt in enumerate(results):
                 self.draw_txt(txt, self.FONT_SIZE, self.BITCOIN_ORANGE,
-                              left_corner=(100, self.WINDOWHEIGHT / 2 + 100 + ind * 40))
+                              left_corner=(100, self.WINDOWHEIGHT / 2 + ind * 40))
                 # self.print_results_text(txt, ind * 40, self.FONT_SIZE)
             pygame.display.update()
 
@@ -435,7 +448,7 @@ class TimeMode(Constants):
                                   'Punctuation': (
                                       self.MARGIN + 356, self.MARGIN, len("Punctuation") * self.letter_width, 30)}
 
-    def run_game(self):
+    def run_game(self, theme):
         self.reset_game()
         TIMEREVENT = pygame.USEREVENT + 1
         pygame.time.set_timer(TIMEREVENT, 1000)
@@ -445,6 +458,7 @@ class TimeMode(Constants):
                 # clock = pygame.time.Clock()
                 self.SCREEN.fill(self.BG_COLOR)
                 self.draw_game()
+                self.update_timer()
                 self.draw_sentence()
                 pygame.display.update()
 
@@ -458,6 +472,7 @@ class TimeMode(Constants):
                     self.update_screen = False
                 if event.type == TIMEREVENT and self.active:
                     self.timer -= 1
+                    self.update_timer()
 
                 if event.type == QUIT:
                     self.running = False
@@ -480,7 +495,7 @@ class TimeMode(Constants):
                         # check if Time mode is selected
                         if self.MENU_BAR_ELEMENTS['Words'][0] <= x <= self.MENU_BAR_ELEMENTS['Words'][0] + \
                                 self.MENU_BAR_ELEMENTS['Words'][2]:
-                            return True
+                            return True, theme
                         # check if word count is selected
                         elif self.MENU_BAR_ELEMENTS['15'][0] <= x <= self.MENU_BAR_ELEMENTS['15'][0] + \
                                 self.MENU_BAR_ELEMENTS['15'][2] \
@@ -527,17 +542,6 @@ class TimeMode(Constants):
                                 self.draw_sentence()
                         except:
                             pass
-                        # # checking if the test ended where all the letters are entered
-                        # input_words = self.input_sentence.split(' ')
-                        # if len(input_words) >= self.word_count and len(input_words[-1]) >= len(
-                        #         self.sentence.split(' ')[-1]):
-                        #     self.SCREEN.fill(self.BG_COLOR)
-                        #     self.draw_game()
-                        #     self.draw_sentence()
-                        #     self.active = False
-                        #     self.end = True
-                        #     self.show_result()
-                        #     self.update_screen = False
             pygame.display.update()
         clock.tick(60)
 
@@ -576,8 +580,6 @@ class TimeMode(Constants):
 
         cursor_x = None
         cursor_y = None
-
-        self.draw_txt(str(self.timer), self.BUTTONS_FONT_SIZE, self.BITCOIN_ORANGE, left_corner=self.TIMER_POSTITION)
 
         for i, word in enumerate(sentence_words):
             in_word = input_sen_words[i] if i < len(input_sen_words) else ''
@@ -632,7 +634,7 @@ class TimeMode(Constants):
         # drawing the cursor on the screen
         if cursor_x is not None and cursor_y is not None:
             fontObj = pygame.font.Font(self.FONT_TYPE, self.FONT_SIZE + 10)
-            textSurfaceObj = fontObj.render('|', True, self.LIGHT_CYAN)
+            textSurfaceObj = fontObj.render('|', True, self.BITCOIN_ORANGE)
             textRectObj = textSurfaceObj.get_rect()
             textRectObj.center = (cursor_x, cursor_y + 5)
             self.SCREEN.blit(textSurfaceObj, textRectObj)
@@ -653,6 +655,12 @@ class TimeMode(Constants):
 
         # initializing sentence by getting a random new one
         self.sentence = self.randomize_sentence()
+
+    def update_timer(self):
+        # if the test has started, draws the count-down above the sentence
+        if self.active:
+            self.draw_txt(str(self.timer), self.FONT_SIZE, self.BITCOIN_ORANGE, left_corner=self.TIMER_POSITION)
+
 
     def draw_game(self):
         """
@@ -734,7 +742,6 @@ class TimeMode(Constants):
         """
         if self.end:
             # Calculate accuracy
-
             sentence_words = self.sentence.split(' ')
             input_sen_words = self.input_sentence.split(' ')
             correct_chars = len(input_sen_words) - 1  # counting the spaces
@@ -751,18 +758,14 @@ class TimeMode(Constants):
             # Calculate speed (word per minute wpm)
             self.speed = len(self.input_sentence) * 60 / (5 * self.time_limit)
 
+
             results = [f'Total words: {len(input_sen_words)}',
                        f'Accuracy: {self.accuracy:.2f} %',
                        f'Typing speed: {ceil(self.speed)} wpm']
             for ind, txt in enumerate(results):
                 self.draw_txt(txt, self.FONT_SIZE, self.BITCOIN_ORANGE,
-                              left_corner=(100, self.WINDOWHEIGHT / 2 + 100 + ind * 40))
-                # self.print_results_text(txt, ind * 40, self.FONT_SIZE)
+                              left_corner=(100, self.WINDOWHEIGHT / 2 + ind * 40))
             pygame.display.update()
-
-
-# if __name__ == '__main__':
-#     WordsMode().run_game()
 
 
 class SpeedTypingTest(Constants):
@@ -770,13 +773,14 @@ class SpeedTypingTest(Constants):
         self.mode = False
         self.words_test = WordsMode()
         self.time_test = TimeMode()
+        self.theme = 'Dark'  # theme is by default dark, can be changed to light
 
     def play(self):
         while True:
             if self.mode:
-                self.mode = self.words_test.run_game()
+                self.mode, self.theme = self.words_test.run_game(self.theme)
             else:
-                self.mode = self.time_test.run_game()
+                self.mode, self.theme = self.time_test.run_game(self.theme)
 
 
 SpeedTypingTest().play()
