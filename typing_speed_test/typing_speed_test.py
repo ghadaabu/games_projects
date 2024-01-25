@@ -4,7 +4,7 @@ import pygame.freetype
 from math import ceil
 
 
-class Constants:
+class SpeedTypingTest:
     WINDOWWIDTH = 1100  # 640  # size of window's width in pixels
     WINDOWHEIGHT = 600  # 480  # size of windows' height in pixels
 
@@ -42,10 +42,23 @@ class Constants:
     LINES_SPACING = 50
     TIMER_POSITION = (WINDOWWIDTH // 2, MARGIN + 50)
 
+    def __init__(self):
+        self.mode = False
+        self.words_test = WordsMode()
+        self.time_test = TimeMode()
+        self.theme = 'Dark'  # theme is by default dark, can be changed to light
+
+    def play(self):
+        while True:
+            if self.mode:
+                self.mode, self.theme = self.words_test.run_game(self.theme)
+            else:
+                self.mode, self.theme = self.time_test.run_game(self.theme)
+
 
 # -------------------------- WordsMode ---------------------------------------------------------------------------------
 
-class WordsMode(Constants):
+class WordsMode(SpeedTypingTest):
     def __init__(self):
         self.start_time = 0
         self.total_time = 0
@@ -105,7 +118,7 @@ class WordsMode(Constants):
                 elif event.type == pygame.MOUSEBUTTONUP:
                     x, y = pygame.mouse.get_pos()
                     # pressed anywhere on the screen
-                    if 0 <= x <= self.WINDOWWIDTH and 0 <= y <= self.WINDOWHEIGHT and not self.running:
+                    if not self.running and 0 <= x <= self.WINDOWWIDTH and 0 <= y <= self.WINDOWHEIGHT:
                         self.running = True
 
                     # position of reset box
@@ -163,11 +176,13 @@ class WordsMode(Constants):
                                 self.draw_sentence()
                         except:
                             pass
-                        # checking if the test ended where all the letters are entered
+                        # checking if the test ended. there is two scenarios to end the test, 1- the user entered all
+                        # the letters of the last word in the sentence. 2- the user didn't enter the last word (or
+                        # partially) and pressed space.
                         input_words = self.input_sentence.split(' ')
-                        if len(input_words) >= self.word_count:
-                                # and len(input_words[-1]) >= len(
-                                # self.sentence.split(' ')[-1]):
+                        if (len(input_words) == self.word_count and len(input_words[-1]) == len(
+                                self.sentence.split(' ')[-1])) or (
+                                len(input_words) > self.word_count and self.input_sentence[-1] == ' '):
                             self.SCREEN.fill(self.BG_COLOR)
                             self.draw_game()
                             # self.draw_sentence()
@@ -224,10 +239,10 @@ class WordsMode(Constants):
         cursor_x = None
         cursor_y = None
 
-        # # if the test has started, draws the word-counter above the sentence
-        # if self.active:
-        #     self.draw_txt(f'{len(input_sen_words) - 1} / {self.word_count}', self.FONT_SIZE, self.BITCOIN_ORANGE,
-        #                   left_corner=self.TIMER_POSITION)
+        # if the test has started, draws the word-counter above the sentence
+        if self.active:
+            self.draw_txt(f'{len(input_sen_words) - 1} / {self.word_count}', self.FONT_SIZE, self.BITCOIN_ORANGE,
+                          left_corner=self.TIMER_POSITION)
 
         for i, word in enumerate(sentence_words):
             in_word = input_sen_words[i] if i < len(input_sen_words) else ''
@@ -405,7 +420,7 @@ class WordsMode(Constants):
 
 
 # -------------------------- TimeMode ----------------------------------------------------------------------------------
-class TimeMode(Constants):
+class TimeMode(SpeedTypingTest):
     def __init__(self):
         self.start_time = 0
         self.accuracy = 0
@@ -661,7 +676,6 @@ class TimeMode(Constants):
         if self.active:
             self.draw_txt(str(self.timer), self.FONT_SIZE, self.BITCOIN_ORANGE, left_corner=self.TIMER_POSITION)
 
-
     def draw_game(self):
         """
         Function that draws the game, it draws the reset button and the word count buttons.
@@ -758,7 +772,6 @@ class TimeMode(Constants):
             # Calculate speed (word per minute wpm)
             self.speed = len(self.input_sentence) * 60 / (5 * self.time_limit)
 
-
             results = [f'Total words: {len(input_sen_words)}',
                        f'Accuracy: {self.accuracy:.2f} %',
                        f'Typing speed: {ceil(self.speed)} wpm']
@@ -766,21 +779,6 @@ class TimeMode(Constants):
                 self.draw_txt(txt, self.FONT_SIZE, self.BITCOIN_ORANGE,
                               left_corner=(100, self.WINDOWHEIGHT / 2 + ind * 40))
             pygame.display.update()
-
-
-class SpeedTypingTest(Constants):
-    def __init__(self):
-        self.mode = False
-        self.words_test = WordsMode()
-        self.time_test = TimeMode()
-        self.theme = 'Dark'  # theme is by default dark, can be changed to light
-
-    def play(self):
-        while True:
-            if self.mode:
-                self.mode, self.theme = self.words_test.run_game(self.theme)
-            else:
-                self.mode, self.theme = self.time_test.run_game(self.theme)
 
 
 SpeedTypingTest().play()
