@@ -1,17 +1,32 @@
-# Speed Typing Test
+# Speed Typing Test with Pygame
 
-**Description:**
+Welcome to the Speed Typing Test project! This Python-based typing test, structured as an object-oriented project using Pygame, offers a dynamic and engaging platform for improving typing skills.
 
-The Speed Typing Test is a Python-based game created using the Pygame library. This object-oriented project revolves around a class representing the game. The core features include:
+## Features
 
-- **Random Sentence Generation:** The game generates a random sentence from a provided words file, displaying it on the screen.
+- **Object-Oriented Design:** The project is structured as an object-oriented endeavor, promoting modularity and extensibility.
+- **Dual Modes:** Choose between Words Mode and Time Mode, each implemented as a subclass of an Abstract Base Class (ABC).
+- **Customization:** Easily switch between modes and customize test parameters, such as the number of words or duration.
+- **User Preferences:** Tailor your typing experience by adding numbers or punctuation to sentences.
+- **Theme Options:** Personalize the window appearance with a dual theme system, offering both light and dark modes.
+- **Dynamic Sentence Generation:** Utilizes a word file for the dynamic generation of random sentences, ensuring a diverse user experience.
+- **Advanced Features:**
+  - Simulated cursor movement
+  - Real-time letter color changes based on user input
+  - Error highlighting
+  - Automatic calculation and display of typing speed and accuracy
 
-- **Interactive Typing Experience:** Simulating a cursor, the game dynamically changes the color of each letter upon user input, highlighting incorrectly entered letters.
+## How to Use
 
-- **Performance Metrics:** The program calculates typing speed and accuracy, presenting comprehensive results at the end of the test.
+To run this Speed Typing Test project, follow these steps:
 
-- **Customizable Test Length:** Users can choose the length of the test, selecting between 10, 20, or 30 words for a tailored typing experience.
+1. **Download Required Fonts:**
+   - Download the `RobotoMono-Regular` font from [Google Fonts](https://fonts.google.com/specimen/IBM+Plex+Mono?query=mono).
 
-To run this project, you need to download the following:
-- RobotoMono-Regular font from google fonts. https://fonts.google.com/specimen/IBM+Plex+Mono?query=mono
-- data base for words, link to download https://www.mit.edu/~ecprice/wordlist.10000. the file should be named "wordlist.10000.txt".
+2. **Download Word Database:**
+   - Download the word database file from [here](https://www.mit.edu/~ecprice/wordlist.10000). Save the file as "wordlist.10000.txt".
+
+3. Clone the repository.
+4. Run the Python script. 
+5. **Enjoy Typing:**
+   - Explore the Words Mode and Time Mode, customize test parameters, and improve your typing skills.
