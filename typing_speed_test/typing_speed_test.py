@@ -3,6 +3,7 @@ from pygame.locals import *
 import pygame.freetype
 from math import ceil
 from abc import ABC
+import darkdetect
 
 
 # -------------------- Constants class ---------------------------------------------------------------------------------
@@ -580,7 +581,10 @@ class SpeedTypingTest(Constants):
         self.limit = 10
         self.TIMEREVENT = pygame.USEREVENT + 1
         pygame.time.set_timer(self.TIMEREVENT, 1000)
-        self.theme = DarkTheme()
+        if darkdetect.isDark():
+            self.theme = DarkTheme()
+        else:
+            self.theme = LightTheme()
         self.moon_icon = pygame.transform.scale(pygame.image.load(self.theme.moon), super().ICONS_SIZE)
         self.sun_icon = pygame.transform.scale(pygame.image.load(self.theme.sun), super().ICONS_SIZE)
 
