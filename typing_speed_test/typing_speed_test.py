@@ -8,6 +8,9 @@ import darkdetect
 
 # -------------------- Constants class ---------------------------------------------------------------------------------
 class Constants:
+    """
+    class for the constants of the game such as colors, positions of objects, font related parameters.
+    """
     WINDOWWIDTH = 1100  # 640  # size of window's width in pixels
     WINDOWHEIGHT = 600  # 480  # size of windows' height in pixels
 
@@ -17,6 +20,7 @@ class Constants:
     BLACK = (0, 0, 0)
     WHITE = (255, 255, 255)
     BATTLESHIP_GRAY = (132, 132, 130)
+    LIGHT_GREY = (188, 188, 188)
     BITCOIN_GRAY = (77, 77, 78)  # darker
     BLACK_COFFEE = (59, 47, 47)
     FATHOM_GREY = (41, 44, 51)
@@ -36,7 +40,8 @@ class Constants:
 
     MARGIN = 100
 
-    RESET_BOX_SIZE = (WINDOWWIDTH / 2 - 30, WINDOWHEIGHT - 100, 60, 30)
+    REPEAT_POSITION = (WINDOWWIDTH / 2 - 30, WINDOWHEIGHT - 100)
+    NEXT_POSITION = (WINDOWWIDTH / 2 - 70, WINDOWHEIGHT - 100)
 
     BUTTONS_FONT_SIZE = 16
     LINES_SPACING = 50
@@ -49,6 +54,10 @@ class Constants:
 
 # ------------------------- ABSTRACT CLASS for modes -------------------------------------------------------------------
 class ModesABC(ABC):
+    """
+    An abstract base class for the game's mode, to make adding modes to the game easier.
+    """
+
     def __init__(self):
         pass
 
@@ -98,13 +107,26 @@ class ModesABC(ABC):
 # -------------------------- WordsMode ---------------------------------------------------------------------------------
 
 class WordsMode(ModesABC):
+    """
+    Words mode module.
+    contains all the words mode related functions.
+    """
+
     def __init__(self, word_count, punctuations, numbers):
+        """
+        :param word_count: the number of words in the test, int = [10, 20, 30]
+        :param punctuations: boolean parameter, which indicates if the test has punctuations
+        :param numbers: boolean parameter, which indicates if the test has numbers
+        """
         self.word_count = word_count
         self.punctuations = punctuations
         self.numbers = numbers
         self.constants = Constants()
 
     def get_word_count(self):
+        """
+        returns the word_count
+        """
         return self.word_count
 
     def menu_button_words(self):
@@ -139,11 +161,17 @@ class WordsMode(ModesABC):
         self.punctuations = not self.punctuations
         return False if self.punctuations else True
 
-    def check_end_game(self, sentence, input_sentence, _):
-        # checks if the game has ended. returns True if ended, else False
-        # checking if the test ended in Words mode. there is two scenarios to end the test,
-        # 1- the user entered all the letters of the last word in the sentence. 2- the user didn't
-        # enter the last word (or partially) and pressed space.
+    def check_end_game(self, sentence, input_sentence, **kwargs):
+        """
+        checks if the game has ended. returns True if ended, else False.
+        there are two scenarios to end the test:
+        1. the user entered all the letters of the last word in the sentence.
+        2. the user didn't enter the last word (or partially) and pressed space.
+        :param sentence: the original sentence of the test
+        :param input_sentence: the user's typed sentence
+        :param _: not relevant
+        :return: Boolean value
+        """
         input_words = input_sentence.split(' ')
         if (len(input_words) == self.word_count and len(input_words[-1]) == len(
                 sentence.split(' ')[-1])) or (
@@ -151,12 +179,28 @@ class WordsMode(ModesABC):
             return True
         return False
 
-    def update_count_down(self, theme, _, input_sentence, letter_width, SCREEN):
+    def update_count_down(self, theme, input_sentence, letter_width, SCREEN, **kwargs):
+        """
+        Updates the count-down, in this module the words counter is updated and print on screen.
+        :param theme: the theme of the game.
+        :param input_sentence: the user's typed sentence
+        :param letter_width: font related parameter
+        :param SCREEN: the screen object to draw the text over
+        :return: None
+        """
         input_sen_words = input_sentence.split(' ')
         self.draw_txt(SCREEN, f'{len(input_sen_words) - 1} / {self.word_count}', theme.FONT_SIZE, theme.COUNTER_COLOR,
                       left_corner=self.constants.COUNT_DOWN_POSITION)
 
-    def draw_menu_bar(self, MENU_BAR_ELEMENTS, theme, letter_width, SCREEN):
+    def draw_menu_bar(self, MENU_BAR_ELEMENTS, theme, letter_width, SCREEN, **kwargs):
+        """
+        draws the key
+        :param MENU_BAR_ELEMENTS:
+        :param theme:
+        :param letter_width:
+        :param SCREEN:
+        :return:
+        """
         spacing = 10
         pos_shift = 8
         pos = (MENU_BAR_ELEMENTS['Words'][0], MENU_BAR_ELEMENTS['Words'][1])
@@ -180,7 +224,7 @@ class WordsMode(ModesABC):
         pos = (pos[0] + len(str(count)) * letter_width + spacing, pos[1])
         self.draw_txt(SCREEN, '|', 24, theme.DEFAULT_TEXT_COLOR, left_corner=(pos[0], pos[1] - pos_shift))
 
-    def draw_sentence(self, sentence, input_sentence, letter_width, row_len, SCREEN, theme):
+    def draw_sentence(self, sentence, input_sentence, letter_width, row_len, SCREEN, theme, **kwargs):
         """
         Function that draws the sentence on the screen, it colors the letters with different colors based on the
         accuracy of the entered words_file where:
@@ -273,7 +317,7 @@ class WordsMode(ModesABC):
         elif left_corner is not None:
             SCREEN.blit(textSurfaceObj, left_corner)
 
-    def show_result(self, end, start_time, sentence, input_sentence, theme, SCREEN):
+    def show_result(self, start_time, sentence, input_sentence, theme, SCREEN, **kwargs):
         """
         Function that draws the results on the screen, it first, calculates the results:
         - total time
@@ -282,35 +326,34 @@ class WordsMode(ModesABC):
           count in an english word is 5
         :return: None
         """
-        if end:
-            # total time calculation
-            total_time = time.time() - start_time
+        # total time calculation
+        total_time = time.time() - start_time
 
-            # Calculate accuracy
-            correct_chars = self.word_count - 1  # counting the spaces
-            sentence_words = sentence.split(' ')
-            input_sen_words = input_sentence.split(' ')
-            for i, word in enumerate(sentence_words):
-                for j, c in enumerate(word):
-                    try:
-                        if c == input_sen_words[i][j]:
-                            correct_chars += 1
-                    except:
-                        pass
-            accuracy = correct_chars / len(sentence) * 100
+        # Calculate accuracy
+        correct_chars = self.word_count - 1  # counting the spaces
+        sentence_words = sentence.split(' ')
+        input_sen_words = input_sentence.split(' ')
+        for i, word in enumerate(sentence_words):
+            for j, c in enumerate(word):
+                try:
+                    if c == input_sen_words[i][j]:
+                        correct_chars += 1
+                except:
+                    pass
+        accuracy = correct_chars / len(sentence) * 100
 
-            # Calculate speed (word per minute wpm)
-            speed = len(input_sentence) * 60 / (5 * total_time)
+        # Calculate speed (word per minute wpm)
+        speed = len(input_sentence) * 60 / (5 * total_time)
 
-            if len(input_sentence) < 0.5 * len(sentence):
-                accuracy = 'NA'
-            results = [f'Total time: {total_time:.2f} secs',
-                       f'Accuracy: {accuracy:.2f} %' if accuracy != 'NA' else f'Accuracy: {accuracy}',
-                       f'Typing speed: {ceil(speed)} wpm']
-            for ind, txt in enumerate(results):
-                self.draw_txt(SCREEN, txt, self.constants.FONT_SIZE, theme.RESULTS_COLOR,
-                              left_corner=(100, self.constants.WINDOWHEIGHT / 2 + ind * 40))
-            pygame.display.update()
+        if len(input_sentence) < 0.5 * len(sentence):
+            accuracy = 'NA'
+        results = [f'Total time: {total_time:.2f} secs',
+                   f'Accuracy: {accuracy:.2f} %' if accuracy != 'NA' else f'Accuracy: {accuracy}',
+                   f'Typing speed: {ceil(speed)} wpm']
+        for ind, txt in enumerate(results):
+            self.draw_txt(SCREEN, txt, self.constants.FONT_SIZE, theme.RESULTS_COLOR,
+                          left_corner=(100, self.constants.WINDOWHEIGHT / 2 + ind * 40))
+        pygame.display.update()
 
 
 # -------------------------- TimeMode ----------------------------------------------------------------------------------
@@ -359,7 +402,7 @@ class TimeMode(ModesABC):
         self.punctuations = not self.punctuations
         return False if self.punctuations else True
 
-    def check_end_game(self, _, input_sentence, start_time):
+    def check_end_game(self, input_sentence, start_time, **kwargs):
         # checks if the game has ended. returns True if ended, else False.
         # if the test is in time mode, checks if the time is elapsed, if yes, ends the test and shows
         # results
@@ -367,12 +410,12 @@ class TimeMode(ModesABC):
             return True
         return False
 
-    def update_count_down(self, theme, timer, input_sentence, _, SCREEN):
+    def update_count_down(self, theme, timer, input_sentence, SCREEN, **kwargs):
         # if the test has started, draws the count-down above the sentence
         self.draw_txt(SCREEN, str(timer), theme.FONT_SIZE, theme.COUNTER_COLOR,
                       left_corner=self.constants.COUNT_DOWN_POSITION)
 
-    def draw_menu_bar(self, MENU_BAR_ELEMENTS, theme, letter_width, SCREEN):
+    def draw_menu_bar(self, MENU_BAR_ELEMENTS, theme, letter_width, SCREEN, **kwargs):
         spacing = 10
         pos_shift = 8
         pos = (MENU_BAR_ELEMENTS['Words'][0], MENU_BAR_ELEMENTS['Words'][1])
@@ -396,7 +439,7 @@ class TimeMode(ModesABC):
         pos = (pos[0] + len(str(count)) * letter_width + spacing, pos[1])
         self.draw_txt(SCREEN, '|', 24, theme.DEFAULT_TEXT_COLOR, left_corner=(pos[0], pos[1] - pos_shift))
 
-    def draw_sentence(self, sentence, input_sentence, letter_width, row_len, SCREEN, theme):
+    def draw_sentence(self, sentence, input_sentence, letter_width, row_len, SCREEN, theme, **kwargs):
         line_ind = 0
         sentence_words = sentence.split(' ')
         input_sen_words = input_sentence.split(' ')
@@ -487,7 +530,7 @@ class TimeMode(ModesABC):
         elif left_corner is not None:
             SCREEN.blit(textSurfaceObj, left_corner)
 
-    def show_result(self, end, _, sentence, input_sentence, theme, SCREEN):
+    def show_result(self, sentence, input_sentence, theme, SCREEN, **kwargs):
         """
         Function that draws the results on the screen, it first, calculates the results:
         - total time
@@ -496,31 +539,30 @@ class TimeMode(ModesABC):
           count in an english word is 5
         :return: None
         """
-        if end:
-            # Calculate accuracy
-            sentence_words = sentence.split(' ')
-            input_sen_words = input_sentence.split(' ')
-            correct_chars = len(input_sen_words) - 1  # counting the spaces
+        # Calculate accuracy
+        sentence_words = sentence.split(' ')
+        input_sen_words = input_sentence.split(' ')
+        correct_chars = len(input_sen_words) - 1  # counting the spaces
 
-            for i, word in enumerate(sentence_words):
-                for j, c in enumerate(word):
-                    try:
-                        if c == input_sen_words[i][j]:
-                            correct_chars += 1
-                    except:
-                        pass
-            accuracy = correct_chars / len(sentence) * 100
+        for i, word in enumerate(sentence_words):
+            for j, c in enumerate(word):
+                try:
+                    if c == input_sen_words[i][j]:
+                        correct_chars += 1
+                except:
+                    pass
+        accuracy = correct_chars / len(sentence) * 100
 
-            # Calculate speed (word per minute wpm)
-            speed = len(input_sentence) * 60 / (5 * self.time_limit)
+        # Calculate speed (word per minute wpm)
+        speed = len(input_sentence) * 60 / (5 * self.time_limit)
 
-            results = [f'Total words: {len(input_sen_words)}',
-                       f'Accuracy: {accuracy:.2f} %',
-                       f'Typing speed: {ceil(speed)} wpm']
-            for ind, txt in enumerate(results):
-                self.draw_txt(SCREEN, txt, self.constants.FONT_SIZE, theme.RESULTS_COLOR,
-                              left_corner=(100, self.constants.WINDOWHEIGHT / 2 + ind * 40))
-            pygame.display.update()
+        results = [f'Total words: {len(input_sen_words)}',
+                   f'Accuracy: {accuracy:.2f} %',
+                   f'Typing speed: {ceil(speed)} wpm']
+        for ind, txt in enumerate(results):
+            self.draw_txt(SCREEN, txt, self.constants.FONT_SIZE, theme.RESULTS_COLOR,
+                          left_corner=(100, self.constants.WINDOWHEIGHT / 2 + ind * 40))
+        pygame.display.update()
 
 
 # -----------------------------------------------------------------------------------------------------------------------
@@ -541,13 +583,19 @@ class DarkTheme(Constants):
 
         self.moon = 'white_moon_icon.png'
         self.sun = 'white_sun_icon.png'
+        self.repeat_icon_name = 'white_repeat_icon.png'
+        self.next_name = 'white_next_icon.png'
+        self.moon_icon = pygame.transform.smoothscale(pygame.image.load(self.moon), super().ICONS_SIZE)
+        self.sun_icon = pygame.transform.smoothscale(pygame.image.load(self.sun), super().ICONS_SIZE)
+        self.repeat_icon = pygame.transform.smoothscale(pygame.image.load(self.repeat_icon_name), super().ICONS_SIZE)
+        self.next_icon = pygame.transform.smoothscale(pygame.image.load(self.next_name), super().ICONS_SIZE)
 
 
 class LightTheme(Constants):
     def __init__(self):
         self.BG_COLOR = super().DARKER_WHITE
         self.DEFAULT_TEXT_COLOR = super().BLACK
-        self.BASE_SENTENCE_COLOR = super().BATTLESHIP_GRAY
+        self.BASE_SENTENCE_COLOR = super().LIGHT_GREY
         self.WRONG_LETTER_COLOR = super().AMARANTH
         self.EXTRA_LETTER_COLOR = super().AMARANTH_RED
         self.CURSOR_COLOR = super().BITCOIN_ORANGE
@@ -558,6 +606,12 @@ class LightTheme(Constants):
 
         self.moon = 'black_moon_icon.png'
         self.sun = 'black_sun_icon.png'
+        self.repeat_icon_name = 'black_repeat_icon.png'
+        self.next_name = 'black_next_icon.png'
+        self.moon_icon = pygame.transform.smoothscale(pygame.image.load(self.moon), super().ICONS_SIZE)
+        self.sun_icon = pygame.transform.smoothscale(pygame.image.load(self.sun), super().ICONS_SIZE)
+        self.repeat_icon = pygame.transform.smoothscale(pygame.image.load(self.repeat_icon_name), super().ICONS_SIZE)
+        self.next_icon = pygame.transform.smoothscale(pygame.image.load(self.next_name), super().ICONS_SIZE)
 
 
 class SpeedTypingTest(Constants):
@@ -578,6 +632,7 @@ class SpeedTypingTest(Constants):
         self.row_len = self.WINDOWWIDTH - 2 * self.MARGIN
 
         # defining the defaults
+        self.hover = {'repeat': False, 'next': False, 'sun': False, 'moon': False}
         self.limit = 10
         self.TIMEREVENT = pygame.USEREVENT + 1
         pygame.time.set_timer(self.TIMEREVENT, 1000)
@@ -585,8 +640,7 @@ class SpeedTypingTest(Constants):
             self.theme = DarkTheme()
         else:
             self.theme = LightTheme()
-        self.moon_icon = pygame.transform.scale(pygame.image.load(self.theme.moon), super().ICONS_SIZE)
-        self.sun_icon = pygame.transform.scale(pygame.image.load(self.theme.sun), super().ICONS_SIZE)
+        self.switched_theme = False
 
         self.numbers = False  # if True, the test will have numbers
         self.punctuations = False  # if True, the test will have punctuation marks
@@ -594,7 +648,7 @@ class SpeedTypingTest(Constants):
         self.mode = WordsMode(self.limit, self.punctuations, self.numbers)
 
         self.accuracy = 0
-        self.start_time = 0
+        self.start_time = None
         self.input_sentence = ''
         self.end = False
         self.active = False
@@ -624,43 +678,73 @@ class SpeedTypingTest(Constants):
     def switch_theme(self):
         if isinstance(self.theme, DarkTheme):
             self.theme = LightTheme()
-            self.moon_icon = pygame.transform.scale(pygame.image.load(self.theme.moon), super().ICONS_SIZE)
-            self.sun_icon = pygame.transform.scale(pygame.image.load(self.theme.sun), super().ICONS_SIZE)
+
         else:
             self.theme = DarkTheme()
-            self.moon_icon = pygame.transform.scale(pygame.image.load(self.theme.moon), super().ICONS_SIZE)
-            self.sun_icon = pygame.transform.scale(pygame.image.load(self.theme.sun), super().ICONS_SIZE)
 
     def play(self):
         self.reset_game()
         while True:
-            if self.update_screen:
+            if self.update_screen or self.switched_theme:
                 self.SCREEN.fill(self.theme.BG_COLOR)
                 self.draw_game()
+
                 if self.active:
-                    self.mode.update_count_down(self.theme, self.timer, self.input_sentence, self.letter_width,
-                                                self.SCREEN)
-                self.mode.draw_sentence(self.sentence, self.input_sentence, self.letter_width,
-                                        self.row_len, self.SCREEN, self.theme)
+                    self.mode.update_count_down(**self.__dict__)
+                self.mode.draw_sentence(**self.__dict__)
+
+                self.switched_theme = False
+                if self.end:
+                    self.end_test()
+                if any(self.hover.values()):
+                    self.hover_fuc()
                 pygame.display.update()
+
 
             for event in pygame.event.get():
                 if event.type == QUIT:
                     self.running = False
                     pygame.quit()
                     sys.exit()
+
                 if event.type == self.TIMEREVENT and self.active:
                     self.timer -= 1
+
+                if event.type == pygame.MOUSEMOTION:
+                    x, y = event.pos
+                    self.hover['repeat'] = True if self.REPEAT_POSITION[0] <= x <= self.REPEAT_POSITION[0] + \
+                                                   super().ICONS_SIZE[0] and self.REPEAT_POSITION[1] <= y <= \
+                                                   self.REPEAT_POSITION[1] + \
+                                                   super().ICONS_SIZE[1] else False
+                    self.hover['sun'] = True if super().SUN_POSITION[0] <= x <= super().SUN_POSITION[0] + \
+                                                super().ICONS_SIZE[0] and super().SUN_POSITION[1] <= y <= \
+                                                super().SUN_POSITION[1] + \
+                                                super().ICONS_SIZE[1] else False
+                    self.hover['moon'] = True if super().MOON_POSITION[0] <= x <= super().MOON_POSITION[0] + \
+                                                 super().ICONS_SIZE[0] and super().MOON_POSITION[1] <= y <= \
+                                                 super().MOON_POSITION[1] + \
+                                                 super().ICONS_SIZE[1] else False
+                    if self.end:
+                        self.hover['next'] = True if super().NEXT_POSITION[0] <= x <= super().NEXT_POSITION[0] + \
+                                                 super().ICONS_SIZE[0] and super().NEXT_POSITION[1] <= y <= \
+                                                 super().NEXT_POSITION[1] + \
+                                                 super().ICONS_SIZE[1] else False
+
                 if event.type == pygame.MOUSEBUTTONUP:
                     x, y = pygame.mouse.get_pos()
                     # pressed anywhere on the screen
                     if not self.running and 0 <= x <= self.WINDOWWIDTH and 0 <= y <= self.WINDOWHEIGHT:
                         self.running = True
 
-                    # position of reset box
-                    elif self.RESET_BOX_SIZE[0] <= x <= self.RESET_BOX_SIZE[0] + self.RESET_BOX_SIZE[2] \
-                            and self.RESET_BOX_SIZE[1] <= y <= self.RESET_BOX_SIZE[1] + self.RESET_BOX_SIZE[3]:
+                    # position of next box
+                    elif self.end and self.NEXT_POSITION[0] <= x <= self.NEXT_POSITION[0] + self.ICONS_SIZE[0] \
+                            and self.NEXT_POSITION[1] <= y <= self.NEXT_POSITION[1] + self.ICONS_SIZE[1]:
                         self.reset_game()
+
+                    # position of repeat box
+                    elif self.REPEAT_POSITION[0] <= x <= self.REPEAT_POSITION[0] + self.ICONS_SIZE[0] \
+                            and self.REPEAT_POSITION[1] <= y <= self.REPEAT_POSITION[1] + self.ICONS_SIZE[1]:
+                        self.reset_game(randomize=False)
 
                     # checking if the user pressed on a button from the menu bar
                     elif self.MENU_BAR_ELEMENTS['Words'][1] <= y <= self.MENU_BAR_ELEMENTS['Words'][1] + \
@@ -710,15 +794,16 @@ class SpeedTypingTest(Constants):
                                 self.punctuations = not self.punctuations
                                 self.reset_game()
 
-                    elif super().MOON_POSITION[0] <= x <= super().MOON_POSITION[0] + super().ICONS_SIZE[0] and \
-                            super().MOON_POSITION[1] <= y <= super().MOON_POSITION[1] + super().ICONS_SIZE[1]:
+                    elif super().MOON_POSITION[1] <= y <= super().MOON_POSITION[1] + super().ICONS_SIZE[1] and \
+                            ((super().MOON_POSITION[0] <= x <= super().MOON_POSITION[0] + super().ICONS_SIZE[0] and
+                              not isinstance(self.theme, DarkTheme)) or (
+                                     super().SUN_POSITION[0] <= x <= super().SUN_POSITION[0] + super().ICONS_SIZE[0]
+                                     and not isinstance(self.theme, LightTheme))):
                         self.switch_theme()
-                    elif super().SUN_POSITION[0] <= x <= super().SUN_POSITION[0] + super().SUN_POSITION[0] and \
-                            super().SUN_POSITION[1] <= y <= super().SUN_POSITION[1] + super().SUN_POSITION[1]:
-                        self.switch_theme()
+                        self.switched_theme = True
 
                 elif event.type == pygame.KEYDOWN:
-                    if self.running and not self.active:
+                    if self.running and not self.active and not self.end:
                         self.start_time = time.time()
                         self.active = True
                     if event.key == pygame.K_BACKSPACE:
@@ -729,17 +814,29 @@ class SpeedTypingTest(Constants):
                             # checks if the entered key is an alphabet letter or punctuation marks
                             if event.unicode in self.ALPHABET:
                                 self.input_sentence += event.unicode
-                                self.mode.draw_sentence(self.sentence, self.input_sentence, self.letter_width,
-                                                        self.row_len, self.SCREEN, self.theme)
+                                self.mode.draw_sentence(**self.__dict__)
                         except:
                             pass
-            if self.active and self.mode.check_end_game(self.sentence, self.input_sentence, self.start_time):
+            if self.active and self.mode.check_end_game(**self.__dict__):
                 self.end_test()
 
             pygame.display.update()
-        clock.tick(60)
 
-    def reset_game(self):
+    def hover_fuc(self):
+        if self.hover['repeat']:
+            self.draw_txt('Repeat test', super().BUTTONS_FONT_SIZE, self.theme.DEFAULT_TEXT_COLOR,
+                          center_position=(self.REPEAT_POSITION[0] + 20, self.REPEAT_POSITION[1] + 50))
+        elif self.hover['next']:
+            self.draw_txt('Next test', super().BUTTONS_FONT_SIZE, self.theme.DEFAULT_TEXT_COLOR,
+                          center_position=(self.NEXT_POSITION[0] + 20, self.NEXT_POSITION[1] + 50))
+        elif self.hover['sun']:
+            self.draw_txt('Light theme', super().BUTTONS_FONT_SIZE, self.theme.DEFAULT_TEXT_COLOR,
+                          center_position=(self.SUN_POSITION[0] + 20, self.SUN_POSITION[1] + 50))
+        elif self.hover['moon']:
+            self.draw_txt('Dark theme', super().BUTTONS_FONT_SIZE, self.theme.DEFAULT_TEXT_COLOR,
+                          center_position=(self.MOON_POSITION[0], self.MOON_POSITION[1] + 50))
+
+    def reset_game(self, randomize=True):
         """
         Function to reset the game, resets the relevant flags to prepare to new game, and generates a new sentence
         :return: None
@@ -751,9 +848,11 @@ class SpeedTypingTest(Constants):
         self.active = False
         self.update_screen = True
         self.SCREEN.fill(self.theme.BG_COLOR)
+        self.hover['next'] = False
 
         # initializing sentence by getting a random new one
-        self.sentence = self.randomize_sentence()
+        if randomize:
+            self.sentence = self.randomize_sentence()
         try:
             self.mode.print_from_line = 0
         except:
@@ -794,13 +893,13 @@ class SpeedTypingTest(Constants):
         # drawing the reset button
         spacing = 10
         pos_shift = 8
-        center_position = (super().RESET_BOX_SIZE[0] + super().RESET_BOX_SIZE[2] / 2,
-                           super().RESET_BOX_SIZE[1] + super().RESET_BOX_SIZE[3] / 2)
-        self.draw_txt('Reset', super().BUTTONS_FONT_SIZE, self.theme.DEFAULT_TEXT_COLOR,
-                      center_position=center_position,
-                      box_size=super().RESET_BOX_SIZE, box_color=self.theme.RESET_BOX_COLOR)
+        # center_position = (super().REAPEAT_POSITION[0] + super().REAPEAT_POSITION[2] / 2,
+        #                    super().REAPEAT_POSITION[1] + super().REAPEAT_POSITION[3] / 2)
+        # self.draw_txt('Reset', super().BUTTONS_FONT_SIZE, self.theme.DEFAULT_TEXT_COLOR,
+        #               center_position=center_position,
+        #               box_size=super().REAPEAT_POSITION, box_color=self.theme.RESET_BOX_COLOR)
 
-        self.mode.draw_menu_bar(self.MENU_BAR_ELEMENTS, self.theme, self.letter_width, self.SCREEN)
+        self.mode.draw_menu_bar(**self.__dict__)
 
         # self.mode.draw_menu_bar(self)
 
@@ -818,8 +917,11 @@ class SpeedTypingTest(Constants):
                       self.theme.MENU_SELECTED_BUTTONS if self.punctuations else self.theme.DEFAULT_TEXT_COLOR,
                       left_corner=pos)
 
-        self.SCREEN.blit(self.moon_icon, super().MOON_POSITION)
-        self.SCREEN.blit(self.sun_icon, super().SUN_POSITION)
+        self.SCREEN.blit(self.theme.moon_icon, super().MOON_POSITION)
+        self.SCREEN.blit(self.theme.sun_icon, super().SUN_POSITION)
+        if self.end:
+            self.SCREEN.blit(self.theme.next_icon, super().NEXT_POSITION)
+        self.SCREEN.blit(self.theme.repeat_icon, (super().REPEAT_POSITION[0], super().REPEAT_POSITION[1]))
 
     def draw_txt(self, txt, txt_size, txt_color, left_corner=None, center_position=None, box_size=None, box_color=None):
         """
@@ -845,11 +947,11 @@ class SpeedTypingTest(Constants):
 
     def end_test(self):
         self.SCREEN.fill(self.theme.BG_COLOR)
+        self.end = True
         self.draw_game()
         self.active = False
-        self.end = True
-        self.mode.show_result(self.end, self.start_time, self.sentence, self.input_sentence,
-                              self.theme, self.SCREEN)
+
+        self.mode.show_result(**self.__dict__)
         self.update_screen = False
 
 
