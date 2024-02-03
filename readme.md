@@ -4,17 +4,25 @@ Welcome to the Speed Typing Test project! This Python-based typing test, structu
 
 ## Features
 
-- **Object-Oriented Design:** The project is structured as an object-oriented endeavor, promoting modularity and extensibility.
-- **Dual Modes:** Choose between Words Mode and Time Mode, each implemented as a subclass of an Abstract Base Class (ABC).
-- **Customization:** Easily switch between modes and customize test parameters, such as the number of words or duration.
-- **User Preferences:** Tailor your typing experience by adding numbers or punctuation to sentences.
-- **Theme Options:** Personalize the window appearance with a dual theme system, offering both light and dark modes.
-- **Dynamic Sentence Generation:** Utilizes a word file for the dynamic generation of random sentences, ensuring a diverse user experience.
+- **Object-Oriented Design:**
+  The project is structured as an object-oriented endeavor, promoting modularity and extensibility.
+- **Dual Modes:**
+  Choose between Words Mode and Time Mode, each implemented as a subclass of an Abstract Base Class (ABC). Switch effortlessly between modes to suit your typing preferences.
+- **Customization:**
+  Tailor your typing experience by customizing test parameters, such as the number of words or duration. Make it a challenging or leisurely session according to your liking.
+- **User Preferences:**
+  Personalize your experience by adding numbers or punctuation to sentences. Adapt the game to match your typing style and enhance your skills.
+- **Theme Options:**
+  Enjoy a personalized window appearance with the dual theme system, offering both light and dark modes. The game starts with the default theme set by your operating system, ensuring a familiar and comfortable starting point
+- **Dynamic Sentence Generation:**
+  Experience diversity in every session with dynamic sentence generation. Utilizing a word file, the game ensures a wide range of sentences for an immersive and engaging user experience.
+- **Mouse Hovering Feature:**
+  The game includes a mouse hovering feature. Simply hover over symbol buttons, and descriptive labels will appear, providing users with clear guidance on each button's functionality.
 - **Advanced Features:**
-  - Simulated cursor movement
-  - Real-time letter color changes based on user input
-  - Error highlighting
-  - Automatic calculation and display of typing speed and accuracy
+  - Simulated cursor movement for a realistic typing feel.
+  - Real-time letter color changes based on user input, enhancing visual feedback.
+  - Error highlighting to pinpoint areas for improvement.
+  - Automatic calculation and display of typing speed and accuracy, providing valuable metrics for skill assessment.
 
 ## How to Use
 
